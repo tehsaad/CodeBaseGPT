@@ -1,11 +1,12 @@
 import "server-only";
-import { createUIMessageStream, createUIMessageStreamResponse, streamText, toUIMessageStream } from "ai";
+import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { asc, desc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { log } from "@/lib/observability/log";
 import { validateCitations } from "./citations";
 import { buildPrompt, estimateTokens, renderEvidence, renderWeb, type HistoryTurn, type Level, type WebEvidence } from "./prompts";
-import { describeProviderError, getGemma, ProviderNotConfiguredError, type ModelHandle } from "./provider";
+import { streamModelText } from "./generate";
+import { getGemma, ProviderNotConfiguredError, type ModelHandle } from "./provider";
 import type { Evidence } from "./retrieval";
 import type { CbgDataParts, CbgUIMessage, EvidenceItem, WebItem } from "./types";
 
@@ -153,50 +154,30 @@ export function streamGroundedAnswer(opts: AnswerOptions): Response {
       const context = [opts.extraContext, renderEvidence(fitted.evidence), opts.kind === "stuck" ? renderWeb(fitted.web) : ""].filter(Boolean).join("\n\n");
       const prompt = buildPrompt({ policy: opts.policy, supportsSystemRole: model.supportsSystemRole, history, context, question: opts.question, level: opts.level });
 
-      let failure: { code: string; message: string } | null = null;
-      const result = streamText({
-        model: model.model,
+      const generated = await streamModelText({
+        writer,
+        progressId: `p-${messageId}`,
+        textId: `t-${messageId}`,
+        models: [model, ...(model.fallback ? [model.fallback] : [])],
         system: prompt.system,
         messages: prompt.messages,
-        maxOutputTokens: model.maxOutputTokens,
-        temperature: 0.2,
-        maxRetries: model.maxRetries,
-        timeout: { totalMs: 90_000, firstChunkMs: 30_000 },
-        onError: ({ error }) => {
-          failure = describeProviderError(error);
-          log("error", "llm.stream_error", { kind: opts.kind, error });
-        },
+        logKind: opts.kind,
       });
-      writer.merge(
-        toUIMessageStream({
-          stream: result.stream,
-          sendStart: false,
-          sendFinish: false,
-          onError: (error) => {
-            failure ??= describeProviderError(error);
-            return failure.message;
-          },
-        }),
-      );
-
-      let text = "";
-      try {
-        text = await result.text;
-      } catch (error) {
-        failure ??= describeProviderError(error);
+      const text = generated.text;
+      if (generated.model !== model) {
+        writer.write({ type: "data-meta", data: { conversationId: opts.conversationId, messageId, model: generated.model.label, kind: opts.kind } });
       }
-      const err = failure as { code: string; message: string } | null;
-      if (err || !text.trim()) {
-        const status = err ?? { code: "provider_empty", message: "The model returned no answer text (it may have used its whole output budget on reasoning). Try again or ask a narrower question." };
+      if (!text.trim()) {
+        const status = generated.failure ?? { code: "provider_empty", message: "The model returned no answer text." };
         writer.write({ type: "data-status", data: { ...status, kind: "error" } });
-        await persist({ conversationId: opts.conversationId, messageId, content: text || status.message, status: "error", model: model.label, evidence: fitted.evidence, web: fitted.web, used: [], meta: { code: status.code } });
+        await persist({ conversationId: opts.conversationId, messageId, content: status.message, status: "error", model: generated.model.label, evidence: fitted.evidence, web: fitted.web, used: [], meta: { code: status.code } });
         writer.write({ type: "finish" });
         return;
       }
       const available = [...fitted.evidence.map((e) => e.label), ...fitted.web.map((w) => w.label)];
       const { used, invalid } = validateCitations(text, available);
       writer.write({ type: "data-citations", data: { used, invalid } });
-      await persist({ conversationId: opts.conversationId, messageId, content: text, status: "complete", model: model.label, evidence: fitted.evidence, web: fitted.web, used, meta: invalid.length ? { invalidCitations: invalid } : undefined });
+      await persist({ conversationId: opts.conversationId, messageId, content: text, status: "complete", model: generated.model.label, evidence: fitted.evidence, web: fitted.web, used, meta: invalid.length ? { invalidCitations: invalid } : undefined });
       writer.write({ type: "finish" });
     },
     onError: (error) => {

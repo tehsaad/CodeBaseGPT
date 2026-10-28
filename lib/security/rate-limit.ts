@@ -9,6 +9,8 @@ export const LIMITS = {
   search: { max: 20, windowSec: 300 },
   import: { max: 5, windowSec: 600 },
   indexStep: { max: 600, windowSec: 600 },
+  run: { max: 30, windowSec: 600 },
+  tutor: { max: 20, windowSec: 600 },
 } as const;
 
 /** Fixed-window counter stored in Postgres so it holds across serverless instances. */

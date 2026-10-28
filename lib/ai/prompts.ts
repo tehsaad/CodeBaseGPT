@@ -48,7 +48,7 @@ function fence(content: string) {
 
 /** Neutralizes our own delimiter tags if they appear inside untrusted text. */
 export function neutralize(text: string) {
-  return text.replace(/<\/?\s*(repository_evidence|web_sources|evidence|source)\b[^>]*>/gi, (m) => m.replace(/</g, "‹").replace(/>/g, "›"));
+  return text.replace(/<\/?\s*(repository_evidence|web_sources|evidence|source|student_program|student_error|student_code|sandbox_result|stdin|instructions)\b[^>]*>/gi, (m) => m.replace(/</g, "‹").replace(/>/g, "›"));
 }
 
 export function renderEvidence(evidence: Evidence[]) {

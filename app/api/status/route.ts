@@ -1,5 +1,5 @@
 import { connection, NextResponse } from "next/server";
-import { embeddingStatus, gemmaStatus, oauthStatus, searchStatus } from "@/lib/env";
+import { embeddingStatus, gemmaStatus, oauthStatus, sandboxStatus, searchStatus } from "@/lib/env";
 
 /** Public configuration status (booleans and variable names only — never values). */
 export async function GET() {
@@ -12,5 +12,6 @@ export async function GET() {
     search: { configured: search.configured, provider: search.provider, missing: search.missing },
     embeddings: { configured: embeddings.configured, missing: embeddings.missing },
     oauth: oauthStatus(),
+    runner: sandboxStatus(),
   });
 }

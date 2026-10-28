@@ -7,6 +7,7 @@ export function partsOf(m: CbgUIMessage) {
   let citations: CbgDataParts["citations"] | null = null;
   let status: CbgDataParts["status"] | null = null;
   let meta: CbgDataParts["meta"] | null = null;
+  let progress: CbgDataParts["progress"] | null = null;
   for (const p of m.parts) {
     if (p.type === "text") text += p.text;
     else if (p.type === "data-evidence") evidence = p.data.items;
@@ -14,8 +15,9 @@ export function partsOf(m: CbgUIMessage) {
     else if (p.type === "data-citations") citations = p.data;
     else if (p.type === "data-status") status = p.data;
     else if (p.type === "data-meta") meta = p.data;
+    else if (p.type === "data-progress") progress = p.data;
   }
-  return { text, evidence, web, citations, status, meta };
+  return { text, evidence, web, citations, status, meta, progress };
 }
 
 type StoredCitation = { kind: "repo" | "web"; label: string; cited: boolean; fileId: string | null; path: string | null; startLine: number | null; endLine: number | null; symbol: string | null; url: string | null; title: string | null; domain: string | null; snippet: string | null; publishedAt: string | null };

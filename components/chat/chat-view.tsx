@@ -20,6 +20,7 @@ import { AnswerMarkdown } from "./answer-markdown";
 import { EvidenceList } from "./evidence";
 import { fromStored, partsOf } from "./message-parts";
 import { useProviderStatus } from "./use-status";
+import { ThinkingIndicator } from "./thinking";
 
 type Focus = { fileId?: string; symbolId?: string; startLine?: number; endLine?: number };
 
@@ -67,7 +68,8 @@ function AssistantMessage({ m, onOpen, onSave, saved }: { m: CbgUIMessage; onOpe
       {p.status?.kind === "error" && p.status.code !== "provider_not_configured" ? (
         <Notice tone="danger" title={p.status.message}>No answer was generated, so nothing below is AI output. You can retry or open the retrieved code.</Notice>
       ) : null}
-      {p.text ? <AnswerMarkdown text={p.text} h={handlers} /> : streaming ? <div className="space-y-2"><Skeleton className="h-4 w-11/12" /><Skeleton className="h-4 w-4/5" /><Skeleton className="h-4 w-2/3" /></div> : null}
+      {streaming && (!p.text || p.progress?.phase !== "writing") ? <ThinkingIndicator progress={p.progress} /> : null}
+      {p.text ? <AnswerMarkdown text={p.text} h={handlers} /> : null}
       {p.citations?.invalid.length ? (
         <p className="flex items-center gap-1.5 text-xs text-warning">
           <AlertTriangle className="size-3.5" aria-hidden /> The model referenced {p.citations.invalid.join(", ")}, which weren&apos;t in the evidence, so they aren&apos;t linked. Treat those statements as unverified.

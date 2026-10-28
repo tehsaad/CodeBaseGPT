@@ -9,7 +9,7 @@ import { api, ClientApiError } from "@/lib/client/api";
 import { cn } from "@/lib/client/cn";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
-import { Badge, Notice, Panel, Skeleton } from "@/components/ui/misc";
+import { Badge, Notice, Panel } from "@/components/ui/misc";
 import { useRepo } from "@/components/repos/repo-context";
 import { useSourceDrawer } from "@/components/source/source-drawer";
 import { useFileDetail } from "@/components/source/source-viewer";
@@ -17,6 +17,7 @@ import { AnswerMarkdown } from "@/components/chat/answer-markdown";
 import { EvidenceList, WebList } from "@/components/chat/evidence";
 import { partsOf } from "@/components/chat/message-parts";
 import { useProviderStatus } from "@/components/chat/use-status";
+import { ThinkingIndicator } from "@/components/chat/thinking";
 
 type Level = "beginner" | "intermediate" | "advanced";
 type Plan = { evidence: EvidenceItem[]; queries: string[]; signature: string | null; search: { configured: boolean; provider?: string; missing: string[] } };
@@ -230,7 +231,8 @@ export function StuckView() {
           <Panel className="p-4">
             <SectionTitle icon={Sparkles} tone="text-accent" title="AI explanation" note={result.meta?.model ? `${result.meta.model} · verify before applying` : undefined} />
             {result.status?.kind === "error" && result.status.code !== "provider_not_configured" ? <Notice tone="danger" title={result.status.message}>No explanation was generated.</Notice> : null}
-            {result.text ? <AnswerMarkdown text={result.text} h={handlers} /> : <div className="space-y-2"><Skeleton className="h-4" /><Skeleton className="h-4 w-4/5" /><Skeleton className="h-4 w-2/3" /></div>}
+            {busy && (!result.text || result.progress?.phase !== "writing") ? <ThinkingIndicator progress={result.progress} /> : null}
+            {result.text ? <AnswerMarkdown text={result.text} h={handlers} /> : null}
             {result.citations?.invalid.length ? <p className="mt-2 text-xs text-warning">Unverified references removed: {result.citations.invalid.join(", ")}.</p> : null}
           </Panel>
         ) : null}

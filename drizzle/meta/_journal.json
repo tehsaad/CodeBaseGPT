@@ -15,6 +15,13 @@
       "when": 1793174705281,
       "tag": "0001_init",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793192226221,
+      "tag": "0002_code_runs",
+      "breakpoints": true
     }
   ]
 }

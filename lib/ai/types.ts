@@ -22,6 +22,7 @@ export type CbgDataParts = {
   web: { status: "ok" | "not_configured" | "failed" | "skipped"; message?: string; provider?: string; queries: string[]; items: WebItem[] };
   citations: { used: string[]; invalid: string[] };
   status: StreamStatus;
+  progress: { phase: "waiting" | "thinking" | "writing" | "retrying"; model: string; attempt: number; startedAt: number };
 };
 
 export type CbgUIMessage = UIMessage<never, CbgDataParts>;

@@ -34,7 +34,7 @@ test("WCAG 2.1 AA scan across key pages in both themes, plus tablet screenshots"
   await expect(page.getByText("Indexed", { exact: true }).first()).toBeVisible({ timeout: 90_000 });
   repoPath = new URL(page.url()).pathname;
 
-  const pages = ["/dashboard", "/repos", repoPath, `${repoPath}/atlas?expanded=src,src/auth&node=file:src/auth/session.ts`, `${repoPath}/ask`, `${repoPath}/stuck`, `${repoPath}/insights`, `${repoPath}/source`, "/saved", "/history", "/settings"];
+  const pages = ["/dashboard", "/repos", repoPath, `${repoPath}/atlas?expanded=src,src/auth&node=file:src/auth/session.ts`, `${repoPath}/ask`, `${repoPath}/stuck`, `${repoPath}/insights`, `${repoPath}/source`, "/saved", "/history", "/settings", "/tutor"];
   for (const theme of ["dark", "light"] as const) {
     await page.evaluate((t) => localStorage.setItem("cbg-theme", t), theme);
     for (const path of pages) {

@@ -25,7 +25,7 @@ async function signIn(page: Page, who = email) {
 
 test("landing page explains the product and links to sign-up", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Understand any codebase");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Read any codebase");
   await expect(page.getByText("Sample data")).toBeVisible();
   await expect(page.locator(".react-flow__node")).toHaveCount(7);
   await page.getByRole("link", { name: "Get started" }).first().click();
@@ -118,6 +118,26 @@ test("Stuck Mode finds related code from a stack trace and reports missing web s
   await expect(page.getByLabel("Search query 1")).toHaveValue(/TypeError: Cannot read properties of undefined/);
   await page.getByRole("button", { name: "Explain the error" }).click();
   await expect(page.getByText("Web search isn't configured", { exact: true })).toBeVisible();
+});
+
+test("Code Tutor runs a real program in the sandbox and shows its error", async ({ page }) => {
+  test.setTimeout(150_000);
+  // Fresh account: the suite already used most of the 5-per-minute sign-in allowance for this IP.
+  await page.goto("/sign-up");
+  await page.getByLabel("Name").fill("Tutor Student");
+  await page.getByLabel("Email").fill(`tutor-${Date.now()}@example.com`);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByLabel("Confirm password").fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+  await page.goto("/tutor");
+  await expect(page.getByLabel("Python 3.14 source code")).toBeVisible();
+  await page.getByRole("button", { name: "Run" }).click();
+  await expect(page.getByText("Crashed with an error")).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText("IndexError: list index out of range")).toBeVisible();
+  await page.getByRole("button", { name: "Explain my error" }).click();
+  // Gemma is deliberately unconfigured in this suite: the tutor must say so, not invent an answer.
+  await expect(page.getByText(/Gemma isn't configured/)).toBeVisible();
 });
 
 test("another user cannot open this repository", async ({ page }) => {

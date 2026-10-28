@@ -7,6 +7,7 @@ export type ProviderStatus = {
   search: { configured: boolean; provider?: string; missing: string[] };
   embeddings: { configured: boolean; missing: string[] };
   oauth: { github: boolean; google: boolean; email: boolean };
+  runner?: { configured: boolean; compiledLanguages: boolean; missing: string[] };
 };
 
 export function useProviderStatus() {

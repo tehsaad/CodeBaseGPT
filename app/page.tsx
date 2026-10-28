@@ -1,188 +1,292 @@
-import { ArrowRight, BarChart3, Bug, FileCode2, FolderGit2, Globe, GraduationCap, LifeBuoy, Lock, MessageSquareText, Network, ScanSearch, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, FileCode2, Globe, Sparkles } from "lucide-react";
+import { Archivo, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { GitHubIcon } from "@/components/brand/github-icon";
-import { Logo } from "@/components/brand/logo";
+import { LogoMark } from "@/components/brand/logo";
+import { AtlasArt, CitedArt, StuckArt, TutorArt } from "@/components/marketing/art";
 import { SampleAtlas } from "@/components/marketing/sample-atlas";
-import { ButtonLink } from "@/components/ui/button";
+
+const archivo = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-archivo", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 const REPO_URL = "https://github.com/tehsaad/CodeBaseGPT";
 
-const SIGNATURE = [
-  {
-    icon: Network,
-    eyebrow: "Codebase Atlas",
-    title: "See the architecture that's actually there",
-    body: "Tree-sitter parses TypeScript, JavaScript, Python, Java, C and C++ into files, symbols, imports and calls. Expand folders, follow dependencies in either direction, filter by language, and open any node's source at the exact line.",
-    points: ["Folder, dependency and symbol-call layouts", "Incoming and outgoing edges highlighted", "Keyboard-friendly outline view of the same graph"],
-  },
-  {
-    icon: MessageSquareText,
-    eyebrow: "Cited answers, powered by Gemma",
-    title: "Answers you can check in one click",
-    body: "Questions run hybrid retrieval over your indexed code, and Gemma answers only from what was retrieved. Every claim carries a file-and-line citation that opens the source. Citations the model invents are flagged, not linked.",
-    points: ["“Where is this called?” uses static call sites", "Ask about a node selected in the Atlas", "Says so when the code doesn't show the answer"],
-  },
-  {
-    icon: LifeBuoy,
-    eyebrow: "Student Stuck Mode",
-    title: "Stuck? Get your code and the web side by side",
-    body: "Paste the error. CodeBaseGPT finds the related code in your repository, runs a real web search with the error signature, and explains the likely cause step by step, keeping repository evidence, web sources and its own reasoning visibly separate.",
-    points: ["Editable search queries, real source links", "Beginner, intermediate or advanced explanations", "Works repo-only when search is unavailable"],
-  },
-];
+function Label({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <p className={`font-label text-fg-muted ${className}`}>{children}</p>;
+}
 
-const MORE = [
-  { icon: BarChart3, title: "Measured insights", body: "Languages, largest files, most-depended-on modules, import cycles, unresolved imports, and a documented complexity heuristic." },
-  { icon: Bug, title: "Debugging walkthroughs", body: "Stack-trace function names guide retrieval; hypotheses are labelled as hypotheses." },
-  { icon: ScanSearch, title: "Trace & impact", body: "See which files import a module and which call sites reach a function before you change it." },
-];
+function PillLink({ href, children, glow }: { href: string; children: ReactNode; glow?: boolean }) {
+  return (
+    <Link href={href} className={`font-label inline-flex h-11 items-center gap-2 rounded-full px-5 !text-[11px] font-semibold transition-shadow duration-200 ${glow ? "pill-glow" : "pill-dark text-fg hover:border-white/30"}`}>
+      {children}
+    </Link>
+  );
+}
 
-const STEPS = [
-  { icon: FolderGit2, label: "Import", body: "GitHub URL or ZIP" },
-  { icon: ScanSearch, label: "Index", body: "Parse, filter, resolve" },
-  { icon: Network, label: "Explore", body: "Interactive Atlas" },
-  { icon: MessageSquareText, label: "Ask", body: "Cited answers" },
-  { icon: GraduationCap, label: "Learn", body: "Unstuck, with sources" },
-];
+function FeatureCard({ art, meta, title, body, tag, wide }: { art: ReactNode; meta: string; title: string; body: string; tag: string; wide?: boolean }) {
+  return (
+    <article className={`group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface ${wide ? "md:col-span-2" : ""}`}>
+      <p className="font-label absolute right-6 top-6 whitespace-pre-line text-right !text-[10px] leading-5 text-fg-subtle">{meta}</p>
+      <div className={`px-6 pt-10 ${wide ? "h-72 sm:h-80" : "h-60"}`}>{art}</div>
+      <div className="mt-auto flex items-end justify-between gap-4 p-6 pt-2">
+        <div>
+          <h3 className="font-display text-xl font-semibold">{title}</h3>
+          <p className="mt-1.5 max-w-md text-[14px] leading-relaxed text-fg-muted">{body}</p>
+        </div>
+        <p className="font-label shrink-0 !text-[10px] text-fg-subtle">{tag}</p>
+      </div>
+    </article>
+  );
+}
+
+function Showcase({ n, icon, title, body, meta, cta, children }: { n: string; icon: ReactNode; title: ReactNode; body: string; meta: [string, string][]; cta: { href: string; label: string }; children: ReactNode }) {
+  return (
+    <article className="grid overflow-hidden rounded-2xl border border-border bg-surface lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+      <div className="grid-texture relative flex flex-col p-8 sm:p-10">
+        <span aria-hidden className="font-display text-outline pointer-events-none absolute right-6 top-2 select-none text-[120px] font-bold leading-none opacity-50">{n}</span>
+        <span className="grid size-10 place-items-center rounded-full border border-border-strong text-primary">{icon}</span>
+        <h3 className="font-display mt-8 text-4xl font-semibold leading-[1.02]">{title}</h3>
+        <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-fg-muted">{body}</p>
+        <dl className="mt-10 grid grid-cols-3 border-y border-border">
+          {meta.map(([k, v], i) => (
+            <div key={k} className={`py-3 ${i ? "border-l border-border pl-4" : ""}`}>
+              <dt className="font-label !text-[9px] text-fg-subtle">{k}</dt>
+              <dd className="mt-1 text-[14px]">{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <Link href={cta.href} className="font-label mt-8 inline-flex w-fit items-center gap-2 rounded-full border border-primary/50 px-5 py-2.5 !text-[11px] font-semibold text-primary hover:bg-primary-soft">
+          {cta.label} <ArrowRight className="size-3.5" aria-hidden />
+        </Link>
+      </div>
+      <div className="relative min-h-[320px] border-t border-border bg-[#080808] lg:border-l lg:border-t-0">{children}</div>
+    </article>
+  );
+}
 
 export default function Landing() {
   return (
-    <div className="min-h-dvh">
-      <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary-fill focus:px-3 focus:py-2 focus:text-on-primary">Skip to content</a>
-      <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
-          <Link href="/" aria-label="CodeBaseGPT home"><Logo /></Link>
-          <nav aria-label="Main" className="hidden items-center gap-5 text-[13.5px] text-fg-muted md:flex">
-            <a href="#features" className="hover:text-fg">Features</a>
-            <a href="#how" className="hover:text-fg">How it works</a>
-            <a href="#trust" className="hover:text-fg">Evidence & privacy</a>
-            <a href={REPO_URL} className="hover:text-fg" target="_blank" rel="noopener noreferrer">Docs</a>
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
-            <ButtonLink href="/sign-in" variant="ghost" size="sm">Sign in</ButtonLink>
-            <ButtonLink href="/sign-up" variant="primary" size="sm">Get started</ButtonLink>
-          </div>
+    <div className={`landing ${archivo.variable} ${geistMono.variable} min-h-dvh overflow-x-clip`}>
+      <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-primary-fill focus:px-4 focus:py-2 focus:text-on-primary">Skip to content</a>
+
+      <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between gap-3 px-4 py-4 sm:px-5">
+        <Link href="/" aria-label="CodeBaseGPT home" className="pill-dark inline-flex h-12 items-center gap-2.5 rounded-full pl-2 pr-4">
+          <LogoMark className="size-8" />
+          <span className="text-[15px] font-semibold tracking-tight">CodeBaseGPT</span>
+        </Link>
+        <nav aria-label="Main" className="pill-dark hidden h-12 items-center gap-6 rounded-full px-6 lg:flex">
+          {[["#features", "Features"], ["#tutor", "Code Tutor"], ["#trust", "Evidence"], [REPO_URL, "GitHub"]].map(([href, label]) => (
+            <a key={label} href={href} className="font-label !text-[10px] text-fg-muted hover:text-fg" {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{label}</a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-2">
+          <Link href="/sign-in" className="font-label hidden !text-[11px] text-fg-muted hover:text-fg sm:inline">Sign in</Link>
+          <PillLink href="/sign-up" glow>Get started <ArrowUpRight className="size-3.5" aria-hidden /></PillLink>
         </div>
       </header>
 
       <main id="content">
-        <section className="relative overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-40 h-[520px] bg-[radial-gradient(ellipse_at_center,var(--primary-soft),transparent_65%)]" />
-          <div className="relative mx-auto max-w-6xl px-4 pb-14 pt-16 sm:px-6 sm:pt-24">
-            <p className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs text-fg-muted">
-              <Sparkles className="size-3.5 text-accent" aria-hidden /> For students and developers new to a codebase
-            </p>
-            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.08] tracking-tight sm:text-[56px]">
-              Understand any codebase. <span className="text-primary">With receipts.</span>
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-fg-muted">
-              Import a repository, explore its real architecture in an interactive Atlas, and ask questions answered from the code itself, with every claim linked to the file and line it came from.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink href="/sign-up" variant="primary" size="lg">Get started <ArrowRight /></ButtonLink>
-              <ButtonLink href="#demo" variant="secondary" size="lg"><Network /> Try the sample Atlas</ButtonLink>
+        {/* Hero */}
+        <section className="relative isolate flex min-h-[94dvh] items-center overflow-hidden pt-24">
+          <div aria-hidden className="arc" />
+          <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_55%_at_68%_62%,rgba(200,241,53,0.16),transparent_70%)]" />
+          <div className="mx-auto w-full max-w-6xl px-6">
+            <div className="border-t border-border pt-4">
+              <Label className="text-right !text-[10px]">Open source · MIT · Built for students</Label>
             </div>
-            <p className="mt-4 text-xs text-fg-subtle">Open source (MIT). Imported code is parsed, never executed.</p>
+            <h1 className="font-display mt-10 text-[clamp(2.6rem,8.2vw,6.4rem)] font-semibold leading-[0.95]">
+              Read any codebase
+              <span className="block pl-[0.6em] max-sm:pl-[0.3em]">
+                like you wrote it<span className="text-[var(--lime)]">.</span>
+              </span>
+            </h1>
+            <div className="mt-12 grid gap-8 border-y border-border py-8 md:grid-cols-[1fr_1fr_auto] md:items-start">
+              <span className="hidden md:block" />
+              <p className="max-w-sm text-[15px] leading-relaxed text-fg-muted">
+                Map a repository&apos;s real architecture, ask Gemma questions answered with file-and-line citations, run small programs, and get unstuck with a tutor that explains your errors.
+              </p>
+              <a href="#atlas" className="font-label inline-flex items-center gap-2 border-b border-fg/60 pb-1 !text-[11px] text-fg hover:border-[var(--lime)] hover:text-[var(--lime)] md:justify-self-end">
+                Explore the Atlas <ArrowUpRight className="size-3.5" aria-hidden />
+              </a>
+            </div>
           </div>
         </section>
 
-        <section id="demo" aria-labelledby="demo-title" className="mx-auto max-w-6xl scroll-mt-20 px-4 sm:px-6">
-          <h2 id="demo-title" className="sr-only">Interactive sample</h2>
+        {/* Live sample */}
+        <section id="atlas" aria-labelledby="atlas-title" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24">
+          <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+            <h2 id="atlas-title" className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-none">
+              Codebase <span className="text-outline">Atlas</span>
+            </h2>
+            <Label className="max-w-xs !normal-case !tracking-normal !text-[13px]">An interactive map built from real imports and calls. Click a file to trace what it depends on and what depends on it.</Label>
+          </div>
           <SampleAtlas />
         </section>
 
-        <section id="features" aria-labelledby="features-title" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">Three tools, one workflow</p>
-          <h2 id="features-title" className="mt-2 max-w-2xl text-[30px] font-semibold tracking-tight">From “where do I even start?” to a fix you understand</h2>
-          <div className="mt-12 space-y-14">
-            {SIGNATURE.map((f, i) => (
-              <article key={f.eyebrow} className="grid gap-6 border-t border-border pt-10 md:grid-cols-[1fr_1.2fr] md:gap-12">
-                <div>
-                  <span className="font-mono text-xs text-fg-subtle">0{i + 1}</span>
-                  <p className="mt-2 flex items-center gap-2 text-sm font-medium text-primary"><f.icon className="size-4" aria-hidden /> {f.eyebrow}</p>
-                  <h3 className="mt-2 text-[22px] font-semibold tracking-tight">{f.title}</h3>
-                </div>
-                <div>
-                  <p className="leading-relaxed text-fg-muted">{f.body}</p>
-                  <ul className="mt-4 space-y-1.5 text-[14px]">
-                    {f.points.map((p) => <li key={p} className="flex gap-2"><span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />{p}</li>)}
-                  </ul>
-                </div>
-              </article>
-            ))}
+        {/* Four tools */}
+        <section id="features" aria-labelledby="features-title" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-16">
+          <Label>What you get</Label>
+          <h2 id="features-title" className="font-display mt-3 text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-[1.02]">
+            Four tools.
+            <br />
+            One workflow.
+          </h2>
+          <div className="mt-12 grid gap-4 md:grid-cols-2">
+            <FeatureCard wide art={<AtlasArt />} meta={"Tree-sitter · 6 languages\nUp to 400 nodes"} title="Codebase Atlas" body="Folders, files, classes and functions as a navigable map. Every edge is an import or call parsed from the source." tag="Explore" />
+            <FeatureCard art={<CitedArt />} meta={"Gemma 4 · cited"} title="Answers with receipts" body="Each claim links to the exact file and lines. Invented citations are flagged, never linked." tag="Ask" />
+            <FeatureCard art={<StuckArt />} meta={"Repo + web"} title="Student Stuck Mode" body="Paste the error. We search your code and the web, and keep the two clearly apart." tag="Research" />
+            <FeatureCard wide art={<TutorArt />} meta={"Sandboxed · no network\nPython · JS · TS · C · C++ · Java"} title="Code Tutor" body="Run a small program in an isolated sandbox, see the real output, and get a line-by-line explanation of what went wrong." tag="Learn" />
           </div>
-          <div className="mt-16 grid gap-px overflow-hidden rounded-[14px] border border-border bg-border sm:grid-cols-3">
-            {MORE.map((m) => (
-              <div key={m.title} className="bg-surface p-5">
-                <m.icon className="size-5 text-fg-muted" aria-hidden />
-                <h3 className="mt-3 text-[15px] font-semibold">{m.title}</h3>
-                <p className="mt-1 text-[13.5px] text-fg-muted">{m.body}</p>
+        </section>
+
+        {/* Showcases */}
+        <section aria-labelledby="proof-title" className="mx-auto max-w-6xl px-6 py-24">
+          <h2 id="proof-title" className="font-display mb-12 text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-none">
+            Built on <span className="text-outline">evidence</span>
+          </h2>
+          <div className="space-y-6">
+            <Showcase
+              n="01"
+              icon={<FileCode2 className="size-4" aria-hidden />}
+              title={<>Cited<br />answers</>}
+              body="Hybrid retrieval finds the definitions, call sites and importers that matter, and Gemma answers only from them."
+              meta={[["Retrieval", "Hybrid"], ["Citations", "file:line"], ["Model", "Gemma 4"]]}
+              cta={{ href: "/sign-up", label: "Ask your repo" }}
+            >
+              <div className="space-y-3 p-6 font-mono text-[12.5px] sm:p-8">
+                <p className="w-fit rounded-xl bg-white/5 px-3 py-2 font-sans text-[14px]">Where is the session token verified?</p>
+                <p className="font-sans text-[14px] leading-relaxed text-fg-muted">
+                  <span className="text-fg">readSession</span> recomputes the HMAC of the payload and compares it before checking expiry{" "}
+                  <span className="rounded border border-primary/50 bg-primary-soft px-1 text-[11px] text-primary">C1</span>.
+                </p>
+                <pre className="overflow-x-auto rounded-lg border border-border bg-[#050505] p-3 leading-relaxed text-fg-muted">
+                  <span className="text-fg-subtle">15 </span>export function <span className="text-primary">readSession</span>(token) {"{"}{"\n"}
+                  <span className="text-fg-subtle">19 </span>  const expected = createHmac(…){"\n"}
+                  <span className="text-fg-subtle">20 </span>  if (expected !== mac) return null;{"\n"}
+                  <span className="text-fg-subtle">22 </span>  return session.expiresAt &gt; Date.now() …
+                </pre>
+                <p className="font-label !text-[9px] text-fg-subtle">Example output · sample repository</p>
               </div>
-            ))}
+            </Showcase>
+            <Showcase
+              n="02"
+              icon={<Globe className="size-4" aria-hidden />}
+              title={<>Stuck,<br />then unstuck</>}
+              body="Stack-frame names guide the search through your code; the error signature (with paths, URLs and tokens stripped) goes to the web."
+              meta={[["Search", "Tavily / Exa"], ["Levels", "3"], ["Sources", "Linked"]]}
+              cta={{ href: "/sign-up", label: "Try Stuck Mode" }}
+            >
+              <div className="h-full p-4"><StuckArt /></div>
+            </Showcase>
           </div>
         </section>
 
-        <section id="trust" aria-labelledby="trust-title" className="border-y border-border bg-surface/50">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2">
-            <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-primary">Evidence first</p>
-              <h2 id="trust-title" className="mt-2 text-[30px] font-semibold tracking-tight">You always know where a statement came from</h2>
-              <p className="mt-4 leading-relaxed text-fg-muted">Answers are assembled from three kinds of material, and the interface never lets them blur together.</p>
-              <ul className="mt-6 space-y-3">
-                <li className="flex gap-3 rounded-lg border border-l-2 border-border border-l-primary bg-surface p-3"><FileCode2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden /><div><p className="text-sm font-medium">Repository evidence</p><p className="text-[13px] text-fg-muted">Code retrieved from your index, cited as <span className="font-mono">[C1]</span> with file and line range.</p></div></li>
-                <li className="flex gap-3 rounded-lg border border-l-2 border-border border-l-info bg-surface p-3"><Globe className="mt-0.5 size-4 shrink-0 text-info" aria-hidden /><div><p className="text-sm font-medium">Web sources</p><p className="text-[13px] text-fg-muted">Real search results with title, domain, date and link, cited as <span className="font-mono">[W1]</span>.</p></div></li>
-                <li className="flex gap-3 rounded-lg border border-l-2 border-border border-l-accent bg-surface p-3"><Sparkles className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden /><div><p className="text-sm font-medium">AI explanation</p><p className="text-[13px] text-fg-muted">Gemma&apos;s reasoning, labelled as such, with inference kept in its own section.</p></div></li>
-              </ul>
+        {/* Tutor */}
+        <section id="tutor" aria-labelledby="tutor-title" className="mx-auto grid max-w-6xl scroll-mt-24 items-center gap-12 px-6 py-24 lg:grid-cols-[1fr_auto_1fr]">
+          <div className="float-slow mx-auto w-full max-w-sm -rotate-6 rounded-2xl border border-[var(--lime)]/70 bg-[linear-gradient(160deg,rgba(200,241,53,0.16),rgba(12,12,12,0.9)_55%)] p-5 shadow-[0_0_60px_-20px_rgba(200,241,53,0.5)]">
+            <div className="flex items-center justify-between">
+              <span className="font-label !text-[9px] text-fg-muted">python 3.14</span>
+              <span className="rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] text-fg-muted">exit 1</span>
             </div>
-            <div className="lg:pt-10">
-              <h3 className="flex items-center gap-2 text-[15px] font-semibold"><ShieldCheck className="size-4 text-success" aria-hidden /> Responsible by default</h3>
-              <ul className="mt-4 space-y-3 text-[14px] text-fg-muted">
-                <li className="flex gap-2"><Lock className="mt-1 size-3.5 shrink-0" aria-hidden /> Your repositories, conversations and research are private to your account, with ownership checked on every request.</li>
-                <li className="flex gap-2"><Lock className="mt-1 size-3.5 shrink-0" aria-hidden /> <span><span className="font-mono">.env</span> files, private keys, dependencies and build output are skipped at import; recognizable tokens are redacted.</span></li>
-                <li className="flex gap-2"><Lock className="mt-1 size-3.5 shrink-0" aria-hidden /> Repository files and web pages are treated as untrusted data. Instructions hidden in them are not followed.</li>
-                <li className="flex gap-2"><Lock className="mt-1 size-3.5 shrink-0" aria-hidden /> Only the retrieved snippets for a question are sent to the model provider, never the whole repository.</li>
-                <li className="flex gap-2"><Lock className="mt-1 size-3.5 shrink-0" aria-hidden /> If the model or search isn&apos;t available, you&apos;re told plainly. Nothing is made up to fill the gap.</li>
-              </ul>
+            <pre className="mt-4 overflow-x-auto font-mono text-[12px] leading-relaxed text-fg-muted">
+              <span className="text-fg-subtle">4 </span>for i in range(len(scores) + 1):{"\n"}
+              <span className="text-fg-subtle">5 </span><span className="bg-warning/20 text-fg">    total += scores[i]</span>
+            </pre>
+            <p className="mt-4 font-mono text-[12px] text-danger">IndexError: list index out of range</p>
+            <div className="mt-4 rounded-lg border border-white/10 bg-black/40 p-3 text-[13px] leading-relaxed">
+              <p className="font-label !text-[9px] text-[var(--lime)]">Tutor · hint</p>
+              <p className="mt-1 text-fg-muted">On <span className="text-fg">line 4</span> the loop runs one step too many. What is the last valid index of a 3-item list?</p>
             </div>
+          </div>
+          <ol aria-hidden className="hidden flex-col items-center gap-5 lg:flex">
+            {[0, 1, 2, 3].map((i) => <li key={i} className={`h-6 w-[3px] rounded ${i === 3 ? "bg-[var(--lime)]" : "bg-white/20"}`} />)}
+          </ol>
+          <div>
+            <h2 id="tutor-title" className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-[1.02]">
+              Run it. Break it.
+              <br />
+              <span className="text-outline">Learn why.</span>
+            </h2>
+            <p className="mt-6 max-w-md text-[15px] leading-relaxed text-fg-muted">
+              The Code Tutor runs your program in a locked-down sandbox and reads the real output. It explains the error in plain language, points to the exact line, gives you a hint first, and keeps the fix one click away.
+            </p>
+            <div className="mt-8"><PillLink href="/sign-up" glow>Open the tutor <ArrowUpRight className="size-3.5" aria-hidden /></PillLink></div>
           </div>
         </section>
 
-        <section id="how" aria-labelledby="how-title" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 sm:px-6">
-          <h2 id="how-title" className="text-[30px] font-semibold tracking-tight">How it works</h2>
-          <ol className="mt-8 grid gap-3 sm:grid-cols-5">
-            {STEPS.map((s, i) => (
-              <li key={s.label} className="rounded-[10px] border border-border bg-surface p-4">
-                <span className="font-mono text-xs text-fg-subtle">{i + 1}</span>
-                <s.icon className="mt-2 size-5 text-primary" aria-hidden />
-                <p className="mt-2 text-sm font-semibold">{s.label}</p>
-                <p className="text-[13px] text-fg-muted">{s.body}</p>
+        {/* How it works */}
+        <section aria-labelledby="how-title" className="mx-auto max-w-6xl px-6 py-16">
+          <h2 id="how-title" className="sr-only">How it works</h2>
+          <ol className="grid border-y border-border sm:grid-cols-5">
+            {[["Import", "GitHub URL or ZIP"], ["Index", "Parse · filter · resolve"], ["Explore", "Interactive Atlas"], ["Ask", "Cited answers"], ["Learn", "Run code, get tutored"]].map(([t, d], i) => (
+              <li key={t} className={`py-6 sm:px-5 ${i ? "border-t border-border sm:border-l sm:border-t-0" : "sm:pl-0"}`}>
+                <p className="font-label !text-[10px] text-[var(--lime)]">0{i + 1}</p>
+                <p className="font-display mt-3 text-xl font-semibold">{t}</p>
+                <p className="mt-1 text-[13px] text-fg-muted">{d}</p>
               </li>
             ))}
           </ol>
-          <div className="mt-14 flex flex-col items-start justify-between gap-4 rounded-[14px] border border-border bg-surface p-6 sm:flex-row sm:items-center">
-            <div>
-              <h3 className="text-lg font-semibold">Point it at a repository you&apos;re trying to learn</h3>
-              <p className="text-[14px] text-fg-muted">Public GitHub repositories import in seconds. No setup on your machine.</p>
+        </section>
+
+        {/* Trust */}
+        <section id="trust" aria-labelledby="trust-title" className="mx-auto grid max-w-6xl scroll-mt-24 gap-12 px-6 py-24 lg:grid-cols-2">
+          <div>
+            <h2 id="trust-title" className="font-display text-[clamp(2.2rem,5vw,3.6rem)] font-semibold leading-[1.02]">
+              Not guesses.
+              <br />
+              <span className="text-outline">Receipts.</span>
+            </h2>
+            <p className="mt-6 max-w-md text-[15px] leading-relaxed text-fg-muted">Every answer keeps its three ingredients visibly separate, and when the model or search isn&apos;t available you&apos;re told plainly — nothing is made up to fill the gap.</p>
+          </div>
+          <ul className="divide-y divide-border border-y border-border">
+            {[
+              [<FileCode2 key="a" className="size-4" aria-hidden />, "Repository evidence", "Retrieved code, cited as [C1] with file and line range."],
+              [<Globe key="b" className="size-4" aria-hidden />, "Web sources", "Real search results with links, cited as [W1]."],
+              [<Sparkles key="c" className="size-4" aria-hidden />, "AI reasoning", "Gemma's explanation, labelled as such, inference kept apart."],
+            ].map(([icon, t, d]) => (
+              <li key={t as string} className="flex gap-4 py-6">
+                <span className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-full border border-border-strong text-[var(--lime)]">{icon}</span>
+                <div>
+                  <p className="font-display text-lg font-semibold">{t}</p>
+                  <p className="mt-1 text-[14px] text-fg-muted">{d}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="font-label !normal-case !tracking-normal !text-[13px] text-fg-muted lg:col-span-2">
+            Private by default: repositories and history are owner-scoped · <code className="font-mono">.env</code> files and keys are never indexed · imported repositories are parsed, never executed · Code Tutor programs run in an isolated sandbox with no network.
+          </p>
+        </section>
+
+        {/* CTA */}
+        <section className="mx-auto max-w-6xl px-6 pb-24">
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-surface px-8 py-16 text-center">
+            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_50%_120%,rgba(200,241,53,0.22),transparent_70%)]" />
+            <h2 className="font-display relative text-[clamp(2rem,4.5vw,3.2rem)] font-semibold leading-[1.02]">
+              Point it at a repo you&apos;re <span className="text-outline">learning</span>
+            </h2>
+            <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+              <PillLink href="/sign-up" glow>Create a free account <ArrowUpRight className="size-3.5" aria-hidden /></PillLink>
+              <PillLink href="/sign-in">Sign in</PillLink>
             </div>
-            <ButtonLink href="/sign-up" variant="primary" size="lg">Create a free account <ArrowRight /></ButtonLink>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 text-[13px] text-fg-muted sm:flex-row sm:items-start sm:justify-between sm:px-6">
-          <div className="space-y-2">
-            <Logo />
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <p aria-hidden className="font-display text-outline select-none text-[clamp(3rem,13vw,10rem)] font-bold leading-none">CODEBASE</p>
+          <div className="mt-10 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <p className="max-w-xs text-xs text-fg-subtle">Open-source codebase intelligence for learners. MIT licensed. Not affiliated with Google; Gemma is a model family by Google.</p>
+            <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-3">
+              <a href="#features" className="font-label !text-[10px] text-fg-muted hover:text-fg">Features</a>
+              <a href={`${REPO_URL}#readme`} target="_blank" rel="noopener noreferrer" className="font-label !text-[10px] text-fg-muted hover:text-fg">Docs</a>
+              <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="font-label inline-flex items-center gap-1.5 !text-[10px] text-fg-muted hover:text-fg"><GitHubIcon className="size-3" /> GitHub</a>
+              <a href={`${REPO_URL}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer" className="font-label !text-[10px] text-fg-muted hover:text-fg">License</a>
+              <Link href="/sign-in" className="font-label !text-[10px] text-fg-muted hover:text-fg">Sign in</Link>
+            </nav>
           </div>
-          <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2">
-            <a href="#features" className="hover:text-fg">Features</a>
-            <a href={`${REPO_URL}#readme`} target="_blank" rel="noopener noreferrer" className="hover:text-fg">Documentation</a>
-            <a href="#trust" className="hover:text-fg">Privacy</a>
-            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-fg"><GitHubIcon className="size-3.5" /> GitHub</a>
-            <Link href="/sign-in" className="hover:text-fg">Sign in</Link>
-            <a href={`${REPO_URL}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer" className="hover:text-fg">License</a>
-          </nav>
         </div>
       </footer>
     </div>

@@ -73,7 +73,7 @@ export function mockGemma(reply: string | (() => never), opts: { supportsSystemR
       };
     },
   });
-  setModelOverrideForTests({ model, label: "gemma-test via mock", modelId: "gemma-test", supportsSystemRole: opts.supportsSystemRole ?? false, contextTokens: 32_000, maxRetries: 0, maxOutputTokens: 1600 });
+  setModelOverrideForTests({ model, label: "gemma-test via mock", modelId: "gemma-test", supportsSystemRole: opts.supportsSystemRole ?? false, contextTokens: 32_000, maxRetries: 0, streamRetries: 0, maxOutputTokens: 1600 });
   return model;
 }
 

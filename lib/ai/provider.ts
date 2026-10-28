@@ -1,20 +1,25 @@
 import "server-only";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { gateway } from "@ai-sdk/gateway";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
 import { env, gemmaStatus } from "@/lib/env";
 
 export type ModelHandle = {
   model: LanguageModel;
-  /** Human-readable identity shown next to every answer, e.g. "gemma-3-27b-it via Google AI". */
+  /** Human-readable identity shown next to every answer, e.g. "gemma-4-26b-a4b-it via Google AI Studio". */
   label: string;
   modelId: string;
-  /** Gemma on the Gemini API rejects system instructions, so policy is sent in the first user turn. */
+  /** Gemma 1–3 on the Gemini API reject system instructions, so policy is then sent in the first user turn. */
   supportsSystemRole: boolean;
   contextTokens: number;
   maxRetries: number;
+  /** Retries for provider errors that arrive after streaming has started. */
+  streamRetries: number;
   /** Includes hidden reasoning for thinking models (Gemma 4 spends ~700 tokens thinking before answering). */
   maxOutputTokens: number;
+  /** Another Gemma model tried when this one produces no text (the answer label shows which one answered). */
+  fallback?: ModelHandle;
 };
 
 export class ProviderNotConfiguredError extends Error {
@@ -30,27 +35,25 @@ export function setModelOverrideForTests(handle: ModelHandle | null) {
   override = handle;
 }
 
-export function getGemma(): ModelHandle {
-  if (override) return override;
-  const status = gemmaStatus();
-  if (!status.configured) throw new ProviderNotConfiguredError(status.missing);
+function outputBudget(modelId: string) {
+  return env().GEMMA_MAX_OUTPUT_TOKENS ?? (/gemma-4/i.test(modelId) ? 6144 : 1600);
+}
+
+function buildHandle(provider: string, modelId: string): ModelHandle {
   const e = env();
-  const modelId = e.GEMMA_MODEL!;
-  if (status.provider === "openai-compatible") {
-    const provider = createOpenAICompatible({ name: "gemma-endpoint", baseURL: e.GEMMA_BASE_URL!, apiKey: e.GEMMA_API_KEY });
+  const contextTokens = e.GEMMA_CONTEXT_TOKENS ?? 32_000;
+  if (provider === "openai-compatible") {
+    const p = createOpenAICompatible({ name: "gemma-endpoint", baseURL: e.GEMMA_BASE_URL!, apiKey: e.GEMMA_API_KEY });
     let host = "custom endpoint";
     try {
       host = new URL(e.GEMMA_BASE_URL!).host;
     } catch {}
-    return {
-      model: provider.chatModel(modelId),
-      label: `${modelId} via ${host}`,
-      modelId,
-      supportsSystemRole: true,
-      contextTokens: e.GEMMA_CONTEXT_TOKENS ?? 32_000,
-      maxRetries: 1,
-      maxOutputTokens: e.GEMMA_MAX_OUTPUT_TOKENS ?? 1600,
-    };
+    return { model: p.chatModel(modelId), label: `${modelId} via ${host}`, modelId, supportsSystemRole: true, contextTokens, maxRetries: 2, streamRetries: 1, maxOutputTokens: outputBudget(modelId) };
+  }
+  if (provider === "gateway") {
+    // Vercel AI Gateway: authenticates with the deployment's OIDC token (or AI_GATEWAY_API_KEY).
+    const id = modelId.includes("/") ? modelId : `google/${modelId}`;
+    return { model: gateway(id), label: `${id} via Vercel AI Gateway`, modelId: id, supportsSystemRole: true, contextTokens, maxRetries: 3, streamRetries: 2, maxOutputTokens: outputBudget(id) };
   }
   const google = createGoogleGenerativeAI({ apiKey: e.GEMMA_API_KEY });
   return {
@@ -59,12 +62,22 @@ export function getGemma(): ModelHandle {
     modelId,
     // Gemma 1–3 on the Gemini API reject system instructions; Gemma 4 accepts them (verified 2026-10-28).
     supportsSystemRole: !/^gemma-[123](n)?-/i.test(modelId),
-    contextTokens: e.GEMMA_CONTEXT_TOKENS ?? 32_000,
-    // Hosted Gemma intermittently returns 500 INTERNAL; retry before surfacing an error.
-    maxRetries: 3,
-    // Gemma 4 always reasons first and its thinking budget can't be limited, so leave room for both.
-    maxOutputTokens: e.GEMMA_MAX_OUTPUT_TOKENS ?? (/^gemma-4/i.test(modelId) ? 6144 : 1600),
+    contextTokens,
+    // Hosted Gemma 4 intermittently returns 500 INTERNAL (5 of 6 cold calls in our benchmark); retries with backoff recover.
+    maxRetries: 5,
+    streamRetries: 3,
+    maxOutputTokens: outputBudget(modelId),
   };
+}
+
+export function getGemma(): ModelHandle {
+  if (override) return override;
+  const status = gemmaStatus();
+  if (!status.configured) throw new ProviderNotConfiguredError(status.missing);
+  const e = env();
+  const primary = buildHandle(status.provider!, e.GEMMA_MODEL!);
+  if (e.GEMMA_FALLBACK_MODEL && e.GEMMA_FALLBACK_MODEL !== e.GEMMA_MODEL) primary.fallback = buildHandle(status.provider!, e.GEMMA_FALLBACK_MODEL);
+  return primary;
 }
 
 /** Maps provider failures to safe, user-facing messages without leaking keys or raw payloads. */

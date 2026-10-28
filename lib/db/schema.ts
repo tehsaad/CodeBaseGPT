@@ -397,3 +397,28 @@ export const savedAnswer = pgTable(
   },
   (t) => [uniqueIndex("saved_answer_owner_message_uq").on(t.ownerId, t.messageId)],
 );
+
+// ---------- Code Tutor runs ----------
+
+export const codeRun = pgTable(
+  "code_run",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    language: text("language").notNull(),
+    code: text("code").notNull(),
+    stdin: text("stdin").notNull().default(""),
+    phase: text("phase").$type<"compile" | "run">().notNull(),
+    compileOutput: text("compile_output").notNull().default(""),
+    stdout: text("stdout").notNull().default(""),
+    stderr: text("stderr").notNull().default(""),
+    exitCode: integer("exit_code"),
+    timedOut: boolean("timed_out").notNull().default(false),
+    truncated: boolean("truncated").notNull().default(false),
+    durationMs: integer("duration_ms"),
+    createdAt: createdAt(),
+  },
+  (t) => [index("code_run_owner_idx").on(t.ownerId, t.createdAt)],
+);

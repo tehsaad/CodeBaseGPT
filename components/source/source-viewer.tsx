@@ -1,5 +1,5 @@
 "use client";
-import { ArrowUpRight, Braces, ExternalLink, FileCode2, MessageSquareText, Network } from "lucide-react";
+import { ArrowUpRight, Braces, ExternalLink, FileCode2, MessageSquareText, Network, Play } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
@@ -7,6 +7,7 @@ import { fetcher, type ClientApiError } from "@/lib/client/api";
 import { cn } from "@/lib/client/cn";
 import { highlight, shikiLang } from "@/lib/client/highlight";
 import { languageLabel } from "@/lib/code-intelligence/languages";
+import { runLanguageFor } from "@/lib/runner/languages";
 import { ButtonLink } from "@/components/ui/button";
 import { Badge, Notice, Skeleton } from "@/components/ui/misc";
 
@@ -104,6 +105,7 @@ export function SourcePanel({ repoId, fileId, range, compact = false, onSelectRa
         <ButtonLink size="sm" variant="ghost" href={`/repos/${repoId}/atlas?node=${nodeParam}`}><Network /> Show in Atlas</ButtonLink>
         <ButtonLink size="sm" variant="ghost" href={`/repos/${repoId}/ask?file=${file.id}${local ? `&start=${local.start}&end=${local.end}` : ""}`}><MessageSquareText /> Ask about {local ? "these lines" : "this file"}</ButtonLink>
         {!compact ? <ButtonLink size="sm" variant="ghost" href={`/repos/${repoId}/source?file=${file.id}`}><ArrowUpRight /> Open full view</ButtonLink> : null}
+        {runLanguageFor(file.path, file.language) && file.lines <= 400 ? <ButtonLink size="sm" variant="ghost" href={`/tutor?repo=${repoId}&file=${file.id}`}><Play /> Run in Code Tutor</ButtonLink> : null}
         {gh ? <a className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-[13px] text-fg-muted hover:bg-surface-2 hover:text-fg" href={gh} target="_blank" rel="noopener noreferrer"><ExternalLink className="size-4" aria-hidden /> GitHub</a> : null}
       </div>
       {file.parseStatus === "error" ? <Notice tone="warning" className="m-3" title="This file couldn't be parsed for symbols">It&apos;s still searchable as text.</Notice> : null}

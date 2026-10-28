@@ -1,5 +1,5 @@
 "use client";
-import { BarChart3, Bookmark, FolderGit2, History, LayoutDashboard, LifeBuoy, MessageSquareText, Network, ScrollText, Settings } from "lucide-react";
+import { BarChart3, Bookmark, FolderGit2, GraduationCap, History, LayoutDashboard, LifeBuoy, MessageSquareText, Network, ScrollText, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/client/cn";
@@ -20,6 +20,7 @@ export function useNav() {
       items: [
         { href: "/dashboard", label: "Overview", icon: LayoutDashboard, match: (p) => p === "/dashboard" },
         { href: "/repos", label: "Repositories", icon: FolderGit2, match: (p) => p === "/repos" || (p.startsWith("/repos/") && p.split("/").length === 3) },
+        { href: "/tutor", label: "Code Tutor", icon: GraduationCap, match: (p) => p.startsWith("/tutor") },
       ],
     },
     {
