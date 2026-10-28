@@ -18,6 +18,8 @@ import { useProviderStatus } from "@/components/chat/use-status";
 import { CodeEditor, type CodeEditorHandle } from "./code-editor";
 import { EXAMPLES } from "./examples";
 import { TutorMarkdown } from "./tutor-markdown";
+import { FixProposal } from "./fix-proposal";
+import { extractFixedCode } from "@/lib/client/fix";
 
 type RunResult = {
   id: string;
@@ -74,6 +76,9 @@ export function TutorView() {
   const [level, setLevel] = useState<Level>("beginner");
   const [question, setQuestion] = useState("");
   const editor = useRef<CodeEditorHandle>(null);
+  // Explain → fix → verify: the buffer before applying a tutor fix, and the run that verified it.
+  const [beforeFix, setBeforeFix] = useState<{ code: string; messageId: string; previous: RunResult | null } | null>(null);
+  const [verification, setVerification] = useState<{ before: RunResult | null; after: RunResult } | null>(null);
 
   // "Run in Code Tutor" from the source viewer: load that file into the editor.
   const repoId = params.get("repo");
@@ -100,13 +105,19 @@ export function TutorView() {
   });
   const tutorBusy = tutorStatus === "submitted" || tutorStatus === "streaming";
 
-  async function execute() {
-    if (running || !code.trim()) return;
+  async function execute(source = code, opts: { verifying?: RunResult | null } = {}) {
+    if (running || !source.trim()) return;
     setRunning(true);
     setRunError(null);
-    setMessages([]);
+    if (!("verifying" in opts)) {
+      setMessages([]);
+      setBeforeFix(null);
+      setVerification(null);
+    }
     try {
-      setRun(await api<RunResult>("/api/run", { method: "POST", body: JSON.stringify({ language, code, stdin }) }));
+      const result = await api<RunResult>("/api/run", { method: "POST", body: JSON.stringify({ language, code: source, stdin }) });
+      setRun(result);
+      if ("verifying" in opts) setVerification({ before: opts.verifying ?? null, after: result });
     } catch (e) {
       setRunError(e instanceof ClientApiError ? e.message : "The run failed. Try again.");
     } finally {
@@ -141,7 +152,7 @@ export function TutorView() {
             {EXAMPLES[language].map((ex, i) => <option key={ex.title} value={i}>{ex.title}</option>)}
           </select>
           <Button size="sm" variant="ghost" onClick={() => setShowStdin((s) => !s)} aria-expanded={showStdin}><Terminal /> Input</Button>
-          <Button className="ml-auto" variant="primary" onClick={execute} loading={running} disabled={Boolean(unavailable)} title="Run (Ctrl+Enter)"><Play /> Run</Button>
+          <Button className="ml-auto" variant="primary" onClick={() => void execute(code)} loading={running} disabled={Boolean(unavailable)} title="Run (Ctrl+Enter)"><Play /> Run</Button>
         </div>
         {file ? <p className="border-b border-border px-4 py-1.5 font-mono text-xs text-fg-muted">Loaded from {file.file.path}</p> : null}
         <div
@@ -149,7 +160,7 @@ export function TutorView() {
           onKeyDown={(e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
               e.preventDefault();
-              void execute();
+              void execute(code);
             }
           }}
         >
@@ -178,6 +189,12 @@ export function TutorView() {
             <Notice tone="danger" title={runError} />
           ) : run ? (
             <div className="space-y-3">
+              {verification ? (
+                <p className={cn("rounded-md px-2.5 py-1.5 text-[12.5px]", verification.after.exitCode === 0 && !verification.after.timedOut ? "bg-success/10 text-success" : "bg-warning/10 text-warning")} role="status">
+                  {verification.after.exitCode === 0 && !verification.after.timedOut ? "Verified: after applying the fix the program ran without errors." : "Not fixed yet: the program still fails after applying the fix. Ask the tutor about this new result."}
+                  {verification.before ? ` Before: ${verification.before.timedOut ? "timed out" : verification.before.phase === "compile" ? "didn't compile" : `exit ${verification.before.exitCode}`}.` : ""}
+                </p>
+              ) : null}
               <RunStatus run={run} />
               {run.exitExplanation ? <p className="text-[13px] text-fg-muted">{run.exitExplanation}</p> : null}
               <Stream label="Compiler" text={run.compileOutput} tone={run.phase === "compile" ? "danger" : undefined} />
@@ -219,6 +236,17 @@ export function TutorView() {
                     {p.status ? <Notice tone="danger" title={p.status.message} /> : null}
                     {streaming && (!p.text || p.progress?.phase !== "writing") ? <ThinkingIndicator progress={p.progress} /> : null}
                     {p.text ? <TutorMarkdown text={p.text} onLine={(a, b) => editor.current?.flashLines(a, b)} /> : null}
+                    {!streaming && p.text && extractFixedCode(p.text) ? (
+                      <FixProposal
+                        current={beforeFix?.messageId === m.id ? beforeFix.code : code}
+                        proposed={extractFixedCode(p.text)!}
+                        applied={beforeFix?.messageId === m.id}
+                        busy={running}
+                        onApply={() => { setBeforeFix({ code, messageId: m.id, previous: run }); setCode(extractFixedCode(p.text)!); }}
+                        onApplyAndRun={() => { const fixed = extractFixedCode(p.text)!; setBeforeFix({ code, messageId: m.id, previous: run }); setCode(fixed); void execute(fixed, { verifying: run }); }}
+                        onUndo={() => { if (beforeFix) setCode(beforeFix.code); setBeforeFix(null); setVerification(null); }}
+                      />
+                    ) : null}
                   </article>
                 );
               })}

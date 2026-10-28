@@ -11,6 +11,7 @@ export const LIMITS = {
   indexStep: { max: 600, windowSec: 600 },
   run: { max: 30, windowSec: 600 },
   tutor: { max: 20, windowSec: 600 },
+  artifact: { max: 6, windowSec: 600 },
 } as const;
 
 /** Fixed-window counter stored in Postgres so it holds across serverless instances. */

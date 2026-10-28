@@ -422,3 +422,73 @@ export const codeRun = pgTable(
   },
   (t) => [index("code_run_owner_idx").on(t.ownerId, t.createdAt)],
 );
+
+// ---------- Generated repository artifacts (guide, documentation, learning path) ----------
+
+export type ArtifactKind = "guide" | "docs" | "learning";
+
+export const repoArtifact = pgTable(
+  "repo_artifact",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repository.id, { onDelete: "cascade" }),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<ArtifactKind>().notNull(),
+    content: text("content").notNull().default(""),
+    data: jsonb("data").$type<Record<string, unknown>>(),
+    evidence: jsonb("evidence").$type<StoredCitation[]>().notNull().default([]),
+    usedLabels: jsonb("used_labels").$type<string[]>().notNull().default([]),
+    model: text("model"),
+    /** repository.lastIndexedAt when generated; newer index ⇒ stale. */
+    indexedAt: timestamp("indexed_at", { withTimezone: true }),
+    edited: boolean("edited").notNull().default(false),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex("repo_artifact_repo_kind_uq").on(t.repositoryId, t.kind)],
+);
+
+export const learningProgress = pgTable(
+  "learning_progress",
+  {
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repository.id, { onDelete: "cascade" }),
+    taskId: text("task_id").notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("learning_progress_uq").on(t.ownerId, t.repositoryId, t.taskId)],
+);
+
+// ---------- Repository memory (saved understanding) ----------
+
+export const repoNote = pgTable(
+  "repo_note",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    repositoryId: uuid("repository_id")
+      .notNull()
+      .references(() => repository.id, { onDelete: "cascade" }),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"explanation" | "decision" | "debugging" | "location" | "learning" | "question">().notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull().default(""),
+    path: text("path"),
+    startLine: integer("start_line"),
+    endLine: integer("end_line"),
+    /** content hash of the file when saved; differs from the current index ⇒ possibly stale. */
+    fileHash: text("file_hash"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [index("repo_note_repo_idx").on(t.repositoryId, t.ownerId, t.createdAt)],
+);

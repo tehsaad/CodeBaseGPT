@@ -1,5 +1,5 @@
 "use client";
-import { ArrowDownLeft, ArrowUpRight, BookOpen, Code2, FlaskConical, FolderOpen, GitFork, LifeBuoy, ListTree, MessageSquareText, Waypoints } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, BookOpen, Code2, FlaskConical, FolderOpen, GitFork, LifeBuoy, ListTree, MessageSquareText, NotebookPen, Waypoints } from "lucide-react";
 import { useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/client/api";
@@ -170,6 +170,7 @@ export function DetailPanel({ repoId, node, graph, onSelect, onExpand, onShowSym
             {impact ? <ButtonLink size="sm" variant="ghost" className="justify-start" href={`${impact}#tests`}><FlaskConical /> Related tests</ButtonLink> : null}
             <ButtonLink size="sm" variant="ghost" className="justify-start" href={ask("")}><MessageSquareText /> Ask about this</ButtonLink>
             <ButtonLink size="sm" variant="ghost" className="justify-start" href={stuckHref}><LifeBuoy /> Debug here</ButtonLink>
+            {node.fileId ? <ButtonLink size="sm" variant="ghost" className="justify-start" href={`/repos/${repoId}/notes?file=${node.fileId}${node.startLine ? `&start=${node.startLine}&end=${node.endLine ?? node.startLine}` : ""}&title=${encodeURIComponent(node.kind === "symbol" ? node.label : node.path)}`}><NotebookPen /> Save a note</ButtonLink> : null}
           </nav>
         ) : null}
       </div>

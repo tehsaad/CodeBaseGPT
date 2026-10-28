@@ -1,5 +1,5 @@
 "use client";
-import { BarChart3, Bookmark, FolderGit2, GraduationCap, History, LayoutDashboard, LifeBuoy, MessageSquareText, Network, ScrollText, Settings } from "lucide-react";
+import { BarChart3, Bookmark, BookOpenText, Compass, FolderGit2, GitFork, GraduationCap, History, LayoutDashboard, LifeBuoy, MessageSquareText, Network, NotebookPen, ScrollText, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/client/cn";
@@ -26,9 +26,13 @@ export function useNav() {
     {
       label: repoId ? (fromPath ? "This repository" : (last?.name ?? "Repository")) : "Repository · pick one first",
       items: [
+        { href: repoHref("guide"), label: "Codebase guide", icon: Compass, match: inRepo("guide") },
         { href: repoHref("atlas"), label: "Codebase Atlas", icon: Network, match: inRepo("atlas") },
         { href: repoHref("ask"), label: "Ask CodeBaseGPT", icon: MessageSquareText, match: inRepo("ask") },
         { href: repoHref("stuck"), label: "I'm stuck · Web research", icon: LifeBuoy, match: inRepo("stuck") },
+        { href: repoHref("impact"), label: "Change impact", icon: GitFork, match: inRepo("impact") },
+        { href: repoHref("learn"), label: "Learning path", icon: BookOpenText, match: inRepo("learn") },
+        { href: repoHref("notes"), label: "Notes", icon: NotebookPen, match: inRepo("notes") },
         { href: repoHref("insights"), label: "Insights", icon: BarChart3, match: inRepo("insights") },
         { href: repoHref("source"), label: "Source files", icon: ScrollText, match: inRepo("source") },
       ],

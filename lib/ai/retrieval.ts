@@ -6,7 +6,7 @@ import { embeddingsEnabled, embedTexts } from "./embeddings";
 
 const { codeChunk, repoFile, codeSymbol, fileImport, symbolCall } = schema;
 
-export type EvidenceReason = "focus" | "lexical" | "semantic" | "call-site" | "dependent" | "definition";
+export type EvidenceReason = "focus" | "lexical" | "semantic" | "call-site" | "dependent" | "definition" | "overview";
 
 export type Evidence = {
   label: string;

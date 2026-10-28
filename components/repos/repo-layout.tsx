@@ -1,5 +1,5 @@
 "use client";
-import { BarChart3, FileArchive, LayoutGrid, LifeBuoy, MessageSquareText, Network, ScrollText } from "lucide-react";
+import { BarChart3, BookOpenText, Compass, FileArchive, GitFork, LayoutGrid, LifeBuoy, MessageSquareText, Network, NotebookPen, ScrollText } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -13,9 +13,13 @@ import { RepoStatusBadge } from "./status";
 
 const TABS = [
   { seg: "", label: "Overview", icon: LayoutGrid },
+  { seg: "guide", label: "Guide", icon: Compass },
   { seg: "atlas", label: "Atlas", icon: Network },
   { seg: "ask", label: "Ask", icon: MessageSquareText },
   { seg: "stuck", label: "I'm stuck", icon: LifeBuoy },
+  { seg: "impact", label: "Impact", icon: GitFork },
+  { seg: "learn", label: "Learn", icon: BookOpenText },
+  { seg: "notes", label: "Notes", icon: NotebookPen },
   { seg: "insights", label: "Insights", icon: BarChart3 },
   { seg: "source", label: "Source", icon: ScrollText },
 ];

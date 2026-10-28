@@ -1,7 +1,7 @@
 "use client";
 import { Command } from "cmdk";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Braces, FileCode2, Search } from "lucide-react";
+import { Braces, FileCode2, FolderTree, GitFork, ListTree, Network, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/client/api";
@@ -50,6 +50,15 @@ export function CommandPalette() {
     router.push(href);
   };
 
+  // Atlas views and impact for the current repository, plus the matching search hits.
+  const actions = repoId
+    ? [
+        { label: "Atlas: architecture view", href: `/repos/${repoId}/atlas?mode=architecture`, icon: FolderTree },
+        { label: "Atlas: file dependencies", href: `/repos/${repoId}/atlas?mode=dependencies`, icon: Network },
+        { label: "Atlas: symbols & calls", href: `/repos/${repoId}/atlas?mode=symbols`, icon: ListTree },
+        { label: "Change impact explorer", href: `/repos/${repoId}/impact`, icon: GitFork },
+      ].filter((a) => !query || a.label.toLowerCase().includes(query.toLowerCase()))
+    : [];
   const item = "flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-fg-muted data-[selected=true]:bg-surface-2 data-[selected=true]:text-fg";
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -77,6 +86,26 @@ export function CommandPalette() {
                       {h.type === "file" ? <FileCode2 className="size-4 text-primary" aria-hidden /> : <Braces className="size-4 text-info" aria-hidden />}
                       <span className="truncate font-mono text-[13px] text-fg">{h.type === "file" ? h.path : h.name}</span>
                       {h.type === "symbol" ? <span className="ml-auto truncate font-mono text-xs text-fg-subtle">{h.path}:{h.startLine}</span> : null}
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              ) : null}
+              {searchable && hits.length ? (
+                <Command.Group heading="Impact of a change" className="[&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-fg-subtle">
+                  {hits.slice(0, 3).map((h) => (
+                    <Command.Item key={`impact-${h.type}-${h.id}`} value={`impact-${h.type}-${h.id}`} className={item} onSelect={() => go(`/repos/${repoId}/impact?${h.type === "file" ? `file=${h.fileId}` : `symbol=${h.id}`}`)}>
+                      <GitFork className="size-4" aria-hidden />
+                      <span className="truncate">What depends on <span className="font-mono text-fg">{h.type === "file" ? h.path : h.name}</span></span>
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              ) : null}
+              {actions.length ? (
+                <Command.Group heading="Views" className="[&_[cmdk-group-heading]]:px-2.5 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-fg-subtle">
+                  {actions.map((a) => (
+                    <Command.Item key={a.label} value={a.label} className={item} onSelect={() => go(a.href)}>
+                      <a.icon className="size-4" aria-hidden />
+                      {a.label}
                     </Command.Item>
                   ))}
                 </Command.Group>

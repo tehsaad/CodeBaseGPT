@@ -10,6 +10,7 @@ const REASON: Record<string, string> = {
   "call-site": "call site",
   dependent: "imports focused file",
   definition: "definition",
+  overview: "key file",
 };
 
 export function EvidenceList({ items, used, onOpen, compact }: { items: EvidenceItem[]; used?: Set<string>; onOpen: (e: EvidenceItem) => void; compact?: boolean }) {

@@ -20,6 +20,13 @@ async function signIn(page: Page, who = email) {
   await page.getByLabel("Email").fill(who);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in" }).click();
+  // The sign-in limit (5/min) is real; when this serial suite trips it, wait out the window once.
+  const limited = page.getByText("Too many attempts");
+  await Promise.race([page.waitForURL(/\/dashboard/), limited.waitFor()]);
+  if (await limited.isVisible()) {
+    await page.waitForTimeout(61_000);
+    await page.getByRole("button", { name: "Sign in" }).click();
+  }
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
@@ -118,6 +125,41 @@ test("Stuck Mode finds related code from a stack trace and reports missing web s
   await expect(page.getByLabel("Search query 1")).toHaveValue(/TypeError: Cannot read properties of undefined/);
   await page.getByRole("button", { name: "Explain the error" }).click();
   await expect(page.getByText("Web search isn't configured", { exact: true })).toBeVisible();
+});
+
+test("Atlas relationship evidence, impact, guide facts, learning path and notes work on the real index", async ({ page }) => {
+  test.setTimeout(150_000);
+  await signIn(page);
+  await page.goto(`${repoUrl}/atlas?expanded=src,src/auth,src/api,src/lib&node=file:src/auth/session.ts`);
+  const panel = page.getByRole("complementary", { name: "Selected node details" });
+  // Import evidence: the line chip opens the import statement in session.ts.
+  await panel.getByRole("button", { name: "L1" }).first().click();
+  await expect(page.getByRole("dialog").locator(".line.is-highlighted").first()).toContainText(/import|require\(/);
+  await page.keyboard.press("Escape");
+  await panel.getByRole("link", { name: "What depends on this" }).click();
+  await expect(page.getByRole("heading", { name: "Change impact" })).toBeVisible();
+  await expect(page.getByText("Imported directly by")).toBeVisible();
+  await expect(page.getByRole("button", { name: /src\/api\/login\.ts:\d+/ })).toBeVisible();
+
+  await page.goto(`${repoUrl}/guide`);
+  await expect(page.getByText("From the index — not AI")).toBeVisible();
+  await expect(page.getByRole("button", { name: "src/auth/session.ts" })).toBeVisible();
+  await page.getByRole("button", { name: "Write the guide with Gemma" }).click();
+  await expect(page.getByText(/Gemma isn't configured/)).toBeVisible();
+
+  await page.goto(`${repoUrl}/learn`);
+  await expect(page.getByRole("heading", { name: "1. Get oriented" })).toBeVisible();
+  const first = page.getByRole("button", { name: /^Mark done:/ }).first();
+  await first.click();
+  await expect(page.getByText(/^1 \/ \d+$/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByText(/^1 \/ \d+$/)).toBeVisible();
+
+  await page.goto(`${repoUrl}/notes`);
+  await page.getByLabel("Title").fill("Sessions are HMAC-signed");
+  await page.getByLabel("Note", { exact: true }).fill("See signSession.");
+  await page.getByRole("button", { name: "Save note" }).click();
+  await expect(page.getByRole("heading", { name: "Sessions are HMAC-signed" })).toBeVisible();
 });
 
 test("Code Tutor runs a real program in the sandbox and shows its error", async ({ page }) => {

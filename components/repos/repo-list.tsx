@@ -13,7 +13,7 @@ import { EmptyState, Notice, Panel, SectionHeader, Skeleton } from "@/components
 import { ImportForm } from "./import-form";
 import { RepoStatusBadge } from "./status";
 
-const SECTION_LABEL: Record<string, string> = { atlas: "Codebase Atlas", ask: "Ask CodeBaseGPT", stuck: "Stuck Mode", insights: "Insights", source: "Source files" };
+const SECTION_LABEL: Record<string, string> = { guide: "Codebase guide", impact: "Change impact", learn: "Learning path", notes: "Notes", atlas: "Codebase Atlas", ask: "Ask CodeBaseGPT", stuck: "Stuck Mode", insights: "Insights", source: "Source files" };
 
 export function RepoListPage() {
   const params = useSearchParams();

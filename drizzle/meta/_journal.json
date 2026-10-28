@@ -22,6 +22,13 @@
       "when": 1793192226221,
       "tag": "0002_code_runs",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793203096949,
+      "tag": "0003_artifacts_learning_notes",
+      "breakpoints": true
     }
   ]
 }
