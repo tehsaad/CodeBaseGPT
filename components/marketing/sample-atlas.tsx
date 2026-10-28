@@ -54,7 +54,7 @@ function Inner() {
           <Badge tone="warning">Sample data</Badge>
           <span className="text-[11px] text-fg-subtle">demo “taskboard” repo · click a file</span>
         </div>
-        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView fitViewOptions={{ padding: 0.2 }} onNodeClick={(_, n) => setSelected(n.id === selected ? null : n.id)} onPaneClick={() => setSelected(null)} nodesConnectable={false} nodesDraggable={false} zoomOnScroll={false} preventScrolling={false} proOptions={{ hideAttribution: true }} aria-label="Sample Codebase Atlas">
+        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView fitViewOptions={{ padding: 0.2 }} onNodeClick={(_, n) => setSelected(n.id === selected ? null : n.id)} onPaneClick={() => setSelected(null)} nodesConnectable={false} nodesDraggable={false} zoomOnScroll={false} preventScrolling={false} aria-label="Sample Codebase Atlas">
           <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="var(--border-strong)" />
         </ReactFlow>
       </div>
@@ -69,8 +69,8 @@ function Inner() {
         </p>
         <ul className="space-y-1.5">
           {[
-            ["C1", "src/auth/session.ts", "28–32"],
-            ["C2", "src/auth/session.ts", "16–24"],
+            ["C1", "src/auth/session.ts", "25–29"],
+            ["C2", "src/auth/session.ts", "15–23"],
           ].map(([l, p, r]) => (
             <li key={l} className="flex items-center gap-2 rounded-md border border-l-2 border-border border-l-primary bg-surface-2/60 px-2.5 py-1.5">
               <span className="rounded bg-primary-soft px-1 font-mono text-[11px] text-primary">{l}</span>

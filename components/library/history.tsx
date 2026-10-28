@@ -51,7 +51,7 @@ export function HistoryPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:py-8">
       <SectionHeader title="History" description="Every conversation and web search, scoped to your account." />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
         <Panel className="h-fit">
           <h2 className="border-b border-border px-4 py-3 text-sm font-semibold">Conversations</h2>
           {convos.isLoading ? <div className="p-4"><Skeleton className="h-32" /></div> : convos.data?.conversations.length ? (

@@ -49,11 +49,13 @@ describe("query understanding", () => {
   it("extracts safe search terms and identifiers", () => {
     expect(queryTerms("Where is getUserSession called?")).toEqual(expect.arrayContaining(["getusersession", "user", "session"]));
     expect(queryTerms("'; drop table x; --")).toEqual(["drop", "table"]);
+    expect(queryTerms("How are retries handled when parsing fails?")).toEqual(["retry", "handl", "pars", "fail"]);
     expect(mentionedIdentifiers("Where is `signIn` and read_session() and getUser called?")).toEqual(expect.arrayContaining(["signIn", "read_session", "getUser"]));
   });
   it("extracts error signatures and stack frames", () => {
     expect(extractErrorSignature("Traceback...\n  File \"/x/app.py\", line 3, in main\nModuleNotFoundError: No module named 'requests'")).toBe("ModuleNotFoundError: No module named 'requests'");
     expect(stackFrameSymbols("TypeError: x\n    at verifyPassword (/a/b.ts:1:2)\n    at async signIn (/a/c.ts:3:4)")).toEqual(["verifyPassword", "signIn"]);
+    expect(extractErrorSignature("TimeoutError: Request timed out: GET https://api.example.com/items?token=abc for me@corp.com key AbCdEfGhIjKlMnOpQrStUvWxYz0123456789")).toBe("TimeoutError: Request timed out: GET for key");
     const q = suggestQueries({ problem: "import fails", errorText: "ModuleNotFoundError: No module named 'requests'", languages: ["Python"], frameworks: ["flask"] });
     expect(q[0]).toBe("ModuleNotFoundError: No module named 'requests' flask");
   });

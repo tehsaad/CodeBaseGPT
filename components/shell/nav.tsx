@@ -23,13 +23,13 @@ export function useNav() {
       ],
     },
     {
-      label: repoId ? (fromPath ? "This repository" : (last?.name ?? "Repository")) : "Repository",
+      label: repoId ? (fromPath ? "This repository" : (last?.name ?? "Repository")) : "Repository · pick one first",
       items: [
-        { href: repoHref("atlas"), label: "Codebase Atlas", icon: Network, match: inRepo("atlas"), hint: repoId ? undefined : "Choose a repository" },
-        { href: repoHref("ask"), label: "Ask CodeBaseGPT", icon: MessageSquareText, match: inRepo("ask"), hint: repoId ? undefined : "Choose a repository" },
-        { href: repoHref("stuck"), label: "I'm stuck · Web research", icon: LifeBuoy, match: inRepo("stuck"), hint: repoId ? undefined : "Choose a repository" },
-        { href: repoHref("insights"), label: "Insights", icon: BarChart3, match: inRepo("insights"), hint: repoId ? undefined : "Choose a repository" },
-        { href: repoHref("source"), label: "Source files", icon: ScrollText, match: inRepo("source"), hint: repoId ? undefined : "Choose a repository" },
+        { href: repoHref("atlas"), label: "Codebase Atlas", icon: Network, match: inRepo("atlas") },
+        { href: repoHref("ask"), label: "Ask CodeBaseGPT", icon: MessageSquareText, match: inRepo("ask") },
+        { href: repoHref("stuck"), label: "I'm stuck · Web research", icon: LifeBuoy, match: inRepo("stuck") },
+        { href: repoHref("insights"), label: "Insights", icon: BarChart3, match: inRepo("insights") },
+        { href: repoHref("source"), label: "Source files", icon: ScrollText, match: inRepo("source") },
       ],
     },
     {

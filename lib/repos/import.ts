@@ -75,8 +75,9 @@ export async function importFromGitHub(userId: string, input: string, headers: H
           .values({ ownerId: userId, source: "github", name: meta.name, fullName: meta.fullName, htmlUrl: meta.htmlUrl, ref: branch, commitSha: sha, isPrivate: meta.isPrivate, status: "downloading" })
           .returning();
     const job = await storeArchive(repo.id, userId, archive);
+    const [fresh] = await db.select().from(repository).where(eq(repository.id, repo.id));
     log("info", "import.github", { repoId: repo.id, files: archive.files.length, skipped: archive.skipped, redactions: archive.redactions });
-    return { repo, job, existing: false, skipped: archive.skipped, redactions: archive.redactions };
+    return { repo: fresh, job, existing: false, skipped: archive.skipped, redactions: archive.redactions };
   } catch (error) {
     if (error instanceof ApiError) throw error;
     mapArchiveError(error);
@@ -96,7 +97,8 @@ export async function importFromZip(userId: string, file: File) {
       .values({ ownerId: userId, source: "zip", name, fullName: `upload/${name}`, status: "downloading" })
       .returning();
     const job = await storeArchive(repo.id, userId, archive);
-    return { repo, job, existing: false, skipped: archive.skipped, redactions: archive.redactions };
+    const [fresh] = await db.select().from(repository).where(eq(repository.id, repo.id));
+    return { repo: fresh, job, existing: false, skipped: archive.skipped, redactions: archive.redactions };
   } catch (error) {
     if (error instanceof ApiError) throw error;
     mapArchiveError(error);

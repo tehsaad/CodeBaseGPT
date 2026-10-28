@@ -25,6 +25,10 @@ export function extractErrorSignature(text: string | undefined): string | null {
 
 function normalize(s: string) {
   return s
+    // Never send URLs, emails or token-like strings from a student's error to a search provider.
+    .replace(/\b[a-z][a-z0-9+.-]*:\/\/\S+/gi, " ")
+    .replace(/\b[\w.+-]+@[\w-]+\.[\w.-]+\b/g, " ")
+    .replace(/\b[A-Za-z0-9_\-]{32,}\b/g, " ")
     .replace(/(?:[A-Za-z]:)?(?:[\\/][\w.@-]+){2,}[\\/]?/g, " ")
     .replace(/:\d+(:\d+)?/g, "")
     .replace(/\b0x[0-9a-f]+\b/gi, "")

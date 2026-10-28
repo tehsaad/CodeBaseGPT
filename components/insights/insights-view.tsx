@@ -71,7 +71,7 @@ export function InsightsView() {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-[13px] text-fg-muted">All figures are measured from the {nf.format(repo.fileCount)} indexed files at {repo.commitSha ? <span className="font-mono">{repo.commitSha.slice(0, 7)}</span> : "upload time"} (indexed {relativeTime(repo.lastIndexedAt)}). Skipped files ({nf.format(repo.skippedCount)}) aren&apos;t counted.</p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
         <Card title="Lines of code by language" note="Physical lines, including blanks and comments.">
           <div className="grid items-center gap-4 sm:grid-cols-[200px_minmax(0,1fr)]">
             <div className="h-48" role="img" aria-label={`Language share: ${langs.map((l) => `${l.name} ${l.lines} lines`).join(", ")}`}>

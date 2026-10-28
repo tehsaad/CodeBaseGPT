@@ -38,7 +38,7 @@ export function RepoListPage() {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:py-8">
       <SectionHeader title="Repositories" description="Import a codebase to explore it in the Atlas, ask cited questions, and get unstuck." />
       {section ? <Notice tone="info" title={`Choose a repository to open ${SECTION_LABEL[section]}`} /> : null}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <Panel className="min-w-0">
           <div className="border-b border-border px-4 py-3 text-sm font-medium">Your repositories</div>
           {error ? (

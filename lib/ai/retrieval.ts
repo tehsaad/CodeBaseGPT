@@ -28,14 +28,24 @@ const STOPWORDS = new Set(
 );
 
 /** Turns a natural-language question into safe tsquery prefix terms (only [a-z0-9_]). */
+/** Very light English suffix stripping so "retries"/"handled"/"parsing" prefix-match "retry"/"handle"/"parse". */
+export function stem(word: string): string {
+  if (word.length > 5 && word.endsWith("ies")) return `${word.slice(0, -3)}y`;
+  if (word.length > 5 && word.endsWith("ing")) return word.slice(0, -3);
+  if (word.length > 4 && word.endsWith("ed")) return word.slice(0, -2);
+  if (word.length > 4 && word.endsWith("es") && /(ss|sh|ch|x|z)es$/.test(word)) return word.slice(0, -2);
+  if (word.length > 3 && word.endsWith("s") && !word.endsWith("ss")) return word.slice(0, -1);
+  return word;
+}
+
 export function queryTerms(question: string): string[] {
   const words = question.match(/[A-Za-z_][A-Za-z0-9_]*/g) ?? [];
   const terms = new Set<string>();
   for (const w of words) {
     const lower = w.toLowerCase();
-    if (lower.length >= 3 && !STOPWORDS.has(lower)) terms.add(lower);
+    if (lower.length >= 3 && !STOPWORDS.has(lower)) terms.add(stem(lower));
     const parts = w.replace(/([a-z0-9])([A-Z])/g, "$1 $2").split(/[_\s]+/);
-    if (parts.length > 1) for (const p of parts) if (p.length >= 3 && !STOPWORDS.has(p.toLowerCase())) terms.add(p.toLowerCase());
+    if (parts.length > 1) for (const p of parts) if (p.length >= 3 && !STOPWORDS.has(p.toLowerCase())) terms.add(stem(p.toLowerCase()));
   }
   return [...terms].slice(0, 14);
 }
@@ -83,7 +93,19 @@ export async function retrieve({ repoId, question, focus, limit = 10, charBudget
     if (f) {
       const start = Math.max(1, focus?.startLine ?? 1);
       const end = Math.min(f.lineCount || 1, focus?.endLine ?? start + 119);
-      candidates.push({ fileId: f.id, path: f.path, language: f.language, startLine: start, endLine: end, content: lineSlice(f.content, start, end), symbol: null, reason: "focus", score: 100 });
+      // A line selection inside a function counts as focusing that function (enables call-site lookup).
+      let enclosing: { id: string; name: string; startLine: number; endLine: number } | undefined;
+      if (focus?.startLine) {
+        const syms = await db
+          .select({ id: codeSymbol.id, name: codeSymbol.name, startLine: codeSymbol.startLine, endLine: codeSymbol.endLine })
+          .from(codeSymbol)
+          .where(and(eq(codeSymbol.fileId, f.id), sql`${codeSymbol.startLine} <= ${start}`, sql`${codeSymbol.endLine} >= ${end}`));
+        enclosing = syms.sort((a, b) => a.endLine - a.startLine - (b.endLine - b.startLine))[0];
+        if (enclosing) focusSymbolId = enclosing.id;
+      }
+      const s0 = enclosing && enclosing.endLine - enclosing.startLine < 150 ? enclosing.startLine : start;
+      const e0 = enclosing && enclosing.endLine - enclosing.startLine < 150 ? enclosing.endLine : end;
+      candidates.push({ fileId: f.id, path: f.path, language: f.language, startLine: s0, endLine: e0, content: lineSlice(f.content, s0, e0), symbol: enclosing?.name ?? null, reason: "focus", score: 100 });
     } else {
       focusFileId = undefined;
     }
@@ -91,6 +113,7 @@ export async function retrieve({ repoId, question, focus, limit = 10, charBudget
 
   // 2. Lexical retrieval over structure-aware chunks.
   const terms = queryTerms(question);
+  const asksAboutTests = /\b(test|tests|testing|spec|specs)\b/i.test(question);
   if (terms.length) {
     const tsquery = terms.map((t) => `${t}:*`).join(" | ");
     const rows = rowsOf<{ id: string; file_id: string; path: string; language: string | null; start_line: number; end_line: number; content: string; symbol: string | null; rank: number }>(
@@ -114,7 +137,7 @@ export async function retrieve({ repoId, question, focus, limit = 10, charBudget
         if (symLower && symLower.includes(t)) score += 2;
       }
       if (/\.(md|txt|json|ya?ml|toml)$/i.test(r.path)) score *= 0.6;
-      if (/(^|\/)(test|tests|__tests__|spec)\/|\.(test|spec)\./i.test(r.path)) score *= 0.75;
+      if (!asksAboutTests && /(^|\/)(test|tests|__tests__|spec|e2e)\/|\.(test|spec)\./i.test(r.path)) score *= 0.45;
       candidates.push({ chunkId: r.id, fileId: r.file_id, path: r.path, language: r.language, startLine: r.start_line, endLine: r.end_line, content: r.content, symbol: r.symbol, reason: "lexical", score });
     }
   }
@@ -207,11 +230,15 @@ export async function retrieve({ repoId, question, focus, limit = 10, charBudget
   // Merge overlapping ranges in the same file (keep the higher-scoring one) and apply the budget.
   candidates.sort((a, b) => b.score - a.score);
   const picked: Candidate[] = [];
+  const perFile = new Map<string, number>();
   let chars = 0;
   for (const c of candidates) {
     if (picked.length >= limit) break;
     const overlaps = picked.some((p) => p.fileId === c.fileId && c.startLine <= p.endLine && c.endLine >= p.startLine);
     if (overlaps) continue;
+    // Keep evidence diverse: a single large file can't take every slot (focus is exempt).
+    if (c.reason !== "focus" && (perFile.get(c.fileId) ?? 0) >= 3) continue;
+    perFile.set(c.fileId, (perFile.get(c.fileId) ?? 0) + 1);
     const size = c.content.length + c.path.length + 40;
     if (chars + size > charBudget) continue;
     chars += size;

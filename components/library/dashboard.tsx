@@ -34,7 +34,7 @@ export function Dashboard() {
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6 lg:py-8">
       <SectionHeader title={first ? `Welcome back, ${first}` : "Overview"} description="Your repositories, recent questions, and what this server is configured to do." actions={<ButtonLink href="/repos" variant="primary">Import repository</ButtonLink>} />
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           <Panel>
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -47,7 +47,7 @@ export function Dashboard() {
               <ul className="divide-y divide-border">
                 {repos.repositories.map((r) => (
                   <li key={r.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 max-sm:basis-full">
                       <Link href={`/repos/${r.id}`} className="block truncate font-mono text-[13.5px] font-medium hover:text-primary">{r.fullName}</Link>
                       <p className="text-xs text-fg-muted">{nf.format(r.fileCount)} files · {nf.format(r.edgeCount)} import edges · {relativeTime(r.lastIndexedAt)}</p>
                     </div>

@@ -26,7 +26,7 @@ export function RepoOverview() {
   ];
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <Panel className="p-4">
           <h2 className="mb-3 text-sm font-semibold">Index</h2>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">

@@ -1,4 +1,5 @@
 "use client";
+import { usePathname } from "next/navigation";
 import { createContext, use, useCallback, useState, type ReactNode } from "react";
 import { Sheet } from "@/components/ui/sheet";
 import { SourcePanel } from "./source-viewer";
@@ -14,8 +15,12 @@ export function useSourceDrawer() {
 
 /** Opens cited source in place, so chat / research / Atlas context is preserved. */
 export function SourceDrawerProvider({ repoId, children }: { repoId: string; children: ReactNode }) {
-  const [target, setTarget] = useState<Target | null>(null);
-  const openSource = useCallback((t: Target) => setTarget(t), []);
+  const pathname = usePathname();
+  // The drawer belongs to the page it was opened on; navigating elsewhere closes it.
+  const [opened, setOpened] = useState<{ target: Target; on: string } | null>(null);
+  const target = opened?.on === pathname ? opened.target : null;
+  const setTarget = (t: Target | null) => setOpened(t ? { target: t, on: pathname } : null);
+  const openSource = useCallback((t: Target) => setOpened({ target: t, on: window.location.pathname }), []);
   const range = target?.startLine ? { start: target.startLine, end: target.endLine ?? target.startLine } : undefined;
   return (
     <Ctx value={{ openSource }}>

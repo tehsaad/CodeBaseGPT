@@ -159,8 +159,9 @@ export function detectManifest(files: { path: string; content: string }[]) {
   if (pkg) {
     ecosystems.add("npm");
     try {
-      const json = JSON.parse(pkg) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
-      const deps = { ...json.dependencies, ...json.devDependencies };
+      // Runtime/peer deps only: devDependencies (test servers, tooling) would mislabel the project.
+      const json = JSON.parse(pkg) as { dependencies?: Record<string, string>; peerDependencies?: Record<string, string> };
+      const deps = { ...json.peerDependencies, ...json.dependencies };
       for (const name of ["next", "react", "vue", "svelte", "express", "@nestjs/core", "fastify", "electron", "@angular/core", "vite"]) {
         if (deps[name]) frameworks.add(`${name.replace("@nestjs/core", "nestjs").replace("@angular/core", "angular")}${deps[name] ? ` ${deps[name].replace(/^[\^~]/, "")}` : ""}`);
       }

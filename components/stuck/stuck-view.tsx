@@ -23,10 +23,12 @@ type Plan = { evidence: EvidenceItem[]; queries: string[]; signature: string | n
 
 function SectionTitle({ icon: Icon, tone, title, note }: { icon: typeof Globe; tone: string; title: string; note?: string }) {
   return (
-    <div className="mb-2 flex items-center gap-2">
-      <Icon className={cn("size-4", tone)} aria-hidden />
-      <h3 className="text-sm font-semibold">{title}</h3>
-      {note ? <span className="text-[11px] text-fg-subtle">{note}</span> : null}
+    <div className="mb-2">
+      <div className="flex items-center gap-2">
+        <Icon className={cn("size-4 shrink-0", tone)} aria-hidden />
+        <h3 className="text-sm font-semibold">{title}</h3>
+      </div>
+      {note ? <p className="mt-0.5 break-words pl-6 text-[11px] text-fg-subtle">{note}</p> : null}
     </div>
   );
 }
@@ -234,7 +236,7 @@ export function StuckView() {
         ) : null}
         {error ? <Notice tone="danger" title="The request failed">{error.message.startsWith("{") ? "The server rejected the request." : error.message}</Notice> : null}
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-2">
           {result || plan ? (
             <Panel className="p-4">
               <SectionTitle icon={FileCode2} tone="text-primary" title="From your repository" note="verified source" />
@@ -250,7 +252,7 @@ export function StuckView() {
             </Panel>
           ) : null}
         </div>
-        {result && !busy ? (
+        {result && !busy && !result.status ? (
           <div className="flex flex-wrap gap-2">
             <Badge tone="accent">Follow-up</Badge>
             {["Explain that more simply", "What should I check first?", "Show me how to verify the fix"].map((q) => (

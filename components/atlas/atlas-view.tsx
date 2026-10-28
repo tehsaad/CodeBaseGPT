@@ -290,7 +290,6 @@ function AtlasInner() {
               nodesDraggable={false}
               minZoom={0.1}
               maxZoom={2}
-              proOptions={{ hideAttribution: true }}
               onlyRenderVisibleElements
               aria-label={`Codebase Atlas, ${modeInfo.label} layout`}
             >
