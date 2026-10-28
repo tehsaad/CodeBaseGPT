@@ -5,7 +5,8 @@ import { setModelOverrideForTests } from "@/lib/ai/provider";
 
 const BASE = "http://localhost:3000";
 
-type Handler = (req: Request, ctx: { params: Promise<Record<string, string>> }) => Promise<Response>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Handler = (req: Request, ctx: any) => Promise<Response>;
 
 export async function signUp(email: string, password = "correct-horse-battery") {
   const res = await authRoute.POST(
@@ -45,6 +46,7 @@ export async function readUIStream(res: Response) {
   return text
     .split("\n")
     .filter((l) => l.startsWith("data: ") && l !== "data: [DONE]")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((l) => JSON.parse(l.slice(6)) as { type: string; data?: any; delta?: string; errorText?: string });
 }
 

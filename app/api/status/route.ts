@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { embeddingStatus, gemmaStatus, oauthStatus, searchStatus } from "@/lib/env";
 
 /** Public configuration status (booleans and variable names only — never values). */
 export async function GET() {
+  await connection();
   const gemma = gemmaStatus();
   const search = searchStatus();
   const embeddings = embeddingStatus();
