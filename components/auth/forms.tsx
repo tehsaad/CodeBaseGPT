@@ -19,13 +19,31 @@ function messageFor(status: number | undefined, fallback: string) {
   return fallback;
 }
 
+/** Better Auth redirects back with ?error=<code> when a GitHub/Google sign-in fails. */
+export function oauthErrorMessage(code: string | null): string | null {
+  if (!code) return null;
+  switch (code) {
+    case "account_not_linked":
+    case "unable_to_link_account":
+      return "An account with this email already exists. Sign in with your password first; the provider can be linked once the email is verified.";
+    case "email_not_found":
+      return "The provider didn't share an email address. Make one visible (on GitHub, under Settings → Emails) and try again.";
+    case "email_not_verified":
+      return "The provider reports this email as unverified. Verify it with the provider and try again.";
+    case "access_denied":
+      return "Sign-in was cancelled.";
+    default:
+      return "Sign-in with that provider failed. Try again or use your email and password.";
+  }
+}
+
 export function SignInForm() {
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(params.get("error") === "oauth" ? "Sign-in with that provider was cancelled or failed." : null);
+  const [error, setError] = useState<string | null>(() => oauthErrorMessage(params.get("error")));
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {

@@ -23,19 +23,43 @@ The original brief preferred Auth.js. As of this build (October 2026), Auth.js v
 
 ## Setting up GitHub OAuth
 
-1. Go to https://github.com/settings/developers → **New OAuth App**.
-2. Homepage URL: your `BETTER_AUTH_URL`.
-3. Authorization callback URL: `<BETTER_AUTH_URL>/api/auth/callback/github`
-4. Copy the client ID and a new client secret into `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
+Create one OAuth App per environment (GitHub allows a single callback URL per app).
+
+| Field | Production | Local development |
+|---|---|---|
+| Where | https://github.com/settings/applications/new | same |
+| Homepage URL | `https://codebasegpt.vercel.app` | `http://localhost:3000` |
+| Authorization callback URL | `https://codebasegpt.vercel.app/api/auth/callback/github` | `http://localhost:3000/api/auth/callback/github` |
+| Enable Device Flow | off | off |
+
+Generate a client secret, then set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`. Sign-in requests `read:user user:email`; users whose GitHub email is private still work because the `user:email` scope lets Better Auth read their verified primary address.
 
 ## Setting up Google OAuth
 
-1. In https://console.cloud.google.com/apis/credentials, create an **OAuth client ID** of type *Web application*.
-2. Authorized JavaScript origin: your `BETTER_AUTH_URL`.
-3. Authorized redirect URI: `<BETTER_AUTH_URL>/api/auth/callback/google`
-4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, and configure the consent screen.
+1. https://console.cloud.google.com/auth/branding: set up the consent screen (app name CodeBaseGPT, support email, authorised domain `codebasegpt.vercel.app`). Audience **External**. Scopes: `openid`, `.../auth/userinfo.email`, `.../auth/userinfo.profile` (non-sensitive, so no Google verification is needed). While the app is in *Testing*, only listed test users can sign in; choose **Publish app** to open it to everyone.
+2. https://console.cloud.google.com/auth/clients → **Create client** → *Web application*.
+   - Authorised JavaScript origins: `https://codebasegpt.vercel.app` (and `http://localhost:3000` for development)
+   - Authorised redirect URIs: `https://codebasegpt.vercel.app/api/auth/callback/google` (and `http://localhost:3000/api/auth/callback/google`)
+3. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
 
-Until both values are set, the matching button is disabled with an explanation. No fake OAuth flow is shown.
+Preview deployments use their own URLs, which aren't registered with either provider, so OAuth only works on the production domain and localhost.
+
+## Account linking
+
+`accountLinking` trusts GitHub and Google, but Better Auth's `requireLocalEmailVerified` (default **true**) still applies: an OAuth sign-in is only linked to an existing email/password account whose email has been verified. This blocks pre-registration takeover (someone signing up with a victim's address before the victim uses Google). Without email verification, a user who registered with a password and then tries Google with the same address gets a clear "sign in with your password first" message (`account_not_linked`).
+
+## Setting up email (Resend)
+
+Password reset and email verification switch on when both are set:
+
+- `RESEND_API_KEY`: a **sending-access** key restricted to the verified domain (Resend → API Keys → Create, permission *Sending access*, domain `tehsaad.site`).
+- `EMAIL_FROM`: an address on that domain, for example `CodeBaseGPT <no-reply@tehsaad.site>`.
+
+With email enabled, new sign-ups receive a verification link, and verified accounts can be linked to GitHub/Google automatically.
+
+## Applying changes on Vercel
+
+Add the variables to the **Production** environment (mark secrets *Sensitive*), then redeploy: environment changes only reach new deployments.
 
 ## Verification status
 

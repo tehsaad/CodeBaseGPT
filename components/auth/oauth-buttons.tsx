@@ -26,7 +26,7 @@ export function OAuthButtons({ next }: { next: string }) {
   const start = async (provider: "github" | "google") => {
     setPending(provider);
     setError(null);
-    const res = await authClient.signIn.social({ provider, callbackURL: next, errorCallbackURL: "/sign-in?error=oauth" });
+    const res = await authClient.signIn.social({ provider, callbackURL: next, errorCallbackURL: "/sign-in" });
     if (res?.error) {
       setError("Couldn't start sign-in with that provider. Try again.");
       setPending(null);
