@@ -58,4 +58,22 @@ test("streamed Gemma answer survives the URL update, links valid citations and f
   await expect(page.getByText("Web search isn't configured", { exact: true })).toBeVisible();
   await expect(page.getByText(/mock-gemma via 127\.0\.0\.1:3299 · verify before applying/)).toBeVisible();
   expect(cspViolations).toEqual([]);
+
+  // Code Tutor: explain → proposed fix (diff) → apply to editor → run in the real sandbox → verified.
+  await page.goto("/tutor");
+  await page.getByRole("button", { name: "Run" }).click();
+  await expect(page.getByText("Crashed with an error")).toBeVisible({ timeout: 90_000 });
+  await page.getByRole("button", { name: "Explain my error" }).click();
+  const proposal = page.getByRole("region", { name: "Proposed fix" });
+  await expect(proposal).toBeVisible({ timeout: 30_000 });
+  await proposal.getByText("Show the changes").click();
+  await expect(proposal.getByText("for i in range(len(scores)):")).toBeVisible();
+  await proposal.getByRole("button", { name: "Apply to editor" }).click();
+  await expect(page.getByText(/The tutor's fix is in the editor/)).toBeVisible();
+  await page.getByRole("button", { name: "Run", exact: true }).click();
+  await expect(page.getByText(/Verified: after applying the fix the program ran without errors/)).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText("Average: 85.0")).toBeVisible();
+  // The tutor thread survives the verification run.
+  await expect(page.getByText("What is the last valid index?")).toBeVisible();
 });
+

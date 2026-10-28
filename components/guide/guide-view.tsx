@@ -83,7 +83,7 @@ export function GuideView() {
               </div>
               {guide.status ? <Notice tone={guide.status.kind === "error" ? "danger" : "info"} title={guide.status.message} className="mb-3" /> : null}
               {busy && (!guide.text || guide.progress?.phase !== "writing") ? <ThinkingIndicator progress={guide.progress} /> : null}
-              {guide.text ? <AnswerMarkdown text={guide.text} h={handlers} /> : null}
+              {guide.text ? <AnswerMarkdown text={guide.text.replace(/\s*\[repository_facts\]/g, " _(index)_")} h={handlers} /> : null}
               {!busy && data?.guide?.data?.invalidCitations?.length ? <p className="mt-3 text-xs text-danger">Unverifiable citation labels were removed from links: {data.guide.data.invalidCitations.join(", ")}</p> : null}
             </>
           ) : f ? (

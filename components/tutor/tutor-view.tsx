@@ -107,6 +107,8 @@ export function TutorView() {
 
   async function execute(source = code, opts: { verifying?: RunResult | null } = {}) {
     if (running || !source.trim()) return;
+    // Running after "Apply to editor" is the verification step: keep the tutor thread and compare runs.
+    if (!("verifying" in opts) && beforeFix) opts = { verifying: beforeFix.previous };
     setRunning(true);
     setRunError(null);
     if (!("verifying" in opts)) {

@@ -1,6 +1,7 @@
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { getDb, rowsOf, schema } from "@/lib/db";
+import { neutralize } from "@/lib/ai/prompts";
 import type { Evidence } from "@/lib/ai/retrieval";
 
 const { repoFile, codeSymbol } = schema;
@@ -116,8 +117,7 @@ export async function overviewEvidence(repoId: string, facts: RepoFacts, budgetC
 
 /** Renders the deterministic facts as a compact block the model may rely on (and the UI shows directly). */
 export function factsBlock(f: RepoFacts) {
-  return [
-    "<repository_facts source=\"static index, not AI\">",
+  const body = [
     `name: ${f.repo.name}${f.repo.commit ? ` @ ${f.repo.commit}` : ""}; files indexed: ${f.repo.files}; lines: ${f.repo.lines}; symbols: ${f.repo.symbols}; files skipped at import: ${f.repo.skipped}`,
     `frameworks (from manifests): ${f.repo.frameworks.join(", ") || "none detected"}; ecosystems: ${f.repo.ecosystems.join(", ") || "none"}`,
     `languages by lines: ${f.languages.map(([l, n]) => `${l} ${n}`).join(", ")}`,
@@ -125,8 +125,9 @@ export function factsBlock(f: RepoFacts) {
     `most depended-on files: ${f.hubs.map((h) => `${h.path} (${h.importers} importers)`).join(", ") || "none"}`,
     `entry points: ${f.entries.map((e) => `${e.path}${e.line ? `:${e.line}` : ""} [${e.why}]`).join("; ") || "none detected"}`,
     f.routes.length ? `route/page files: ${f.routes.map((r) => r.path).join(", ")}` : "",
-    "</repository_facts>",
   ]
     .filter(Boolean)
     .join("\n");
+  // Paths, framework names and the repository name come from untrusted repository content.
+  return `<repository_facts source="static index, not AI">\n${neutralize(body)}\n</repository_facts>`;
 }

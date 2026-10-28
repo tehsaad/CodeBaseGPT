@@ -30,7 +30,9 @@ export function FixProposal({ current, proposed, applied, onApply, onApplyAndRun
           <Button size="sm" variant="primary" onClick={onApplyAndRun} disabled={busy}><Play /> Apply &amp; run</Button>
         </div>
       </div>
-      <pre className="max-h-72 overflow-auto bg-code py-1 font-mono text-[12px] leading-relaxed">
+      <details className="group">
+        <summary className="cursor-pointer px-3 py-1.5 text-[12px] text-fg-muted hover:text-fg">Show the changes (try the hint first)</summary>
+      <pre className="max-h-72 overflow-auto border-t border-border bg-code py-1 font-mono text-[12px] leading-relaxed">
         {diff.lines.map((l, i) => (
           <div key={i} className={cn("flex px-2", l.kind === "add" && "bg-success/12", l.kind === "del" && "bg-danger/12")}>
             <span className="w-8 shrink-0 select-none text-right text-fg-subtle">{l.oldNo ?? ""}</span>
@@ -40,6 +42,7 @@ export function FixProposal({ current, proposed, applied, onApply, onApplyAndRun
           </div>
         ))}
       </pre>
+      </details>
     </section>
   );
 }
