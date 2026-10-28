@@ -96,14 +96,15 @@ function AssistantMessage({ m, onOpen, onSave, saved }: { m: CbgUIMessage; onOpe
   );
 }
 
-export function ChatView() {
+export function ChatView({ onConversationAssigned }: { onConversationAssigned?: (id: string) => void }) {
   const { repo } = useRepo();
   const { openSource } = useSourceDrawer();
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const { data: status } = useProviderStatus();
-  const initialConvo = params.get("c");
+  // Captured once: the chat writes ?c= itself mid-stream, which must not reset useChat.
+  const [initialConvo] = useState(() => params.get("c"));
   const [conversationId, setConversationId] = useState<string | null>(initialConvo);
   const [focus, setFocus] = useState<Focus | null>(() => {
     const fileId = params.get("file") ?? undefined;
@@ -129,6 +130,7 @@ export function ChatView() {
     onData: (part) => {
       if (part.type === "data-meta" && !conversationId) {
         setConversationId(part.data.conversationId);
+        onConversationAssigned?.(part.data.conversationId);
         const next = new URLSearchParams(params.toString());
         next.set("c", part.data.conversationId);
         router.replace(`${pathname}?${next.toString()}`, { scroll: false });

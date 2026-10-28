@@ -12,15 +12,15 @@ export default defineConfig({
   reporter: [["list"]],
   use: { baseURL: `http://localhost:${PORT}`, trace: "retain-on-failure", screenshot: "only-on-failure" },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } }, testIgnore: /mobile\.spec\.ts/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } }, testIgnore: /(mobile|provider)\.spec\.ts/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: {
-    command: `npx next dev -p ${PORT}`,
+    command: process.env.E2E_PROD ? `npx next start -p ${PORT}` : `npx next dev -p ${PORT}`,
     url: `http://localhost:${PORT}`,
     timeout: 180_000,
     reuseExistingServer: false,
     // Fresh embedded database per run; no AI/search credentials so honest "not configured" states are exercised.
-    env: { CBG_DATA_DIR: dataDir, BETTER_AUTH_URL: `http://localhost:${PORT}`, GEMMA_API_KEY: "", GEMMA_MODEL: "", TAVILY_API_KEY: "", EXA_API_KEY: "" },
+    env: { CBG_DATA_DIR: dataDir, CBG_ALLOW_EMBEDDED_DB: "1", BETTER_AUTH_SECRET: "e2e-only-secret-0123456789abcdefghijklmnop", BETTER_AUTH_URL: `http://localhost:${PORT}`, GEMMA_API_KEY: "", GEMMA_MODEL: "", TAVILY_API_KEY: "", EXA_API_KEY: "" },
   },
 });

@@ -3,6 +3,14 @@ import { fixtureZip } from "../helpers/fixture";
 
 test.describe.configure({ mode: "serial" });
 
+const cspViolations: string[] = [];
+test.beforeEach(({ page }) => {
+  page.on("console", (m) => {
+    if (/Content Security Policy|Refused to (load|execute|apply)/i.test(m.text())) cspViolations.push(m.text());
+  });
+});
+test.afterAll(() => expect(cspViolations).toEqual([]));
+
 const email = `student-${Date.now()}@example.com`;
 const password = "correct-horse-battery";
 let repoUrl = "";
@@ -83,6 +91,9 @@ test("Atlas renders real relationships; selecting a node opens its source", asyn
   // Keyboard-accessible alternative lists the same nodes.
   await page.getByRole("button", { name: "Outline" }).click();
   await expect(page.getByRole("table")).toContainText("src/auth/session.ts");
+  await page.goto(`${repoUrl}/insights`);
+  await expect(page.getByText("Most depended-on files")).toBeVisible();
+  await expect(page.getByRole("img", { name: /Language share/ })).toBeVisible();
 });
 
 test("Ask shows retrieved evidence with working citations and is honest when Gemma is unconfigured", async ({ page }) => {
