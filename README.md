@@ -65,7 +65,7 @@ Without `DATABASE_URL`, an embedded Postgres (PGlite, with pgvector and pg_trgm)
 To enable answers and research, set at least:
 
 ```bash
-GEMMA_MODEL=gemma-3-27b-it
+GEMMA_MODEL=gemma-4-26b-a4b-it
 GEMMA_API_KEY=...        # https://aistudio.google.com/apikey
 TAVILY_API_KEY=...       # https://tavily.com
 ```

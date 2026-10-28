@@ -6,18 +6,18 @@ All model calls happen server-side in `lib/ai/provider.ts`. The browser never se
 
 ```bash
 GEMMA_PROVIDER=google
-GEMMA_MODEL=gemma-3-27b-it
+GEMMA_MODEL=gemma-4-26b-a4b-it
 GEMMA_API_KEY=...            # https://aistudio.google.com/apikey
 GEMMA_CONTEXT_TOKENS=32000   # optional prompt budget (Gemma 3 supports up to 128K)
 ```
 
-The installed `@ai-sdk/google` (v4.0.107) lists these Gemma IDs: `gemma-3-27b-it`, `gemma-3-12b-it`, `gemma-3-4b-it`, `gemma-3-1b-it`, `gemma-3n-e4b-it` and `gemma-3n-e2b-it`. Availability depends on your key and region. Check it with:
+Availability depends on your key. On 2026-10-28 the project's key listed `gemma-4-31b-it` and **`gemma-4-26b-a4b-it`** (used in production: in a reliability check the 31B model failed 2 of 3 calls with `500 INTERNAL`, the 26B-A4B model succeeded 3 of 3); older keys may list Gemma 3 IDs (`gemma-3-27b-it`, …). Check yours with:
 
 ```bash
 curl "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMMA_API_KEY" | grep -o '"name": "models/gemma[^"]*"'
 ```
 
-The Gemini API rejects system instructions for Gemma models. CodeBaseGPT detects `gemma*` model IDs and moves its policy into the first user turn, inside `<instructions>` tags. A test covers this.
+Gemma 1–3 on the Gemini API reject system instructions, so for those IDs CodeBaseGPT moves its policy into the first user turn inside `<instructions>` tags (covered by a test). Gemma 4 accepts system instructions and uses them. Hosted Gemma 4 occasionally returns `500 INTERNAL`, so Google calls retry up to 3 times.
 
 ## Option B: any OpenAI-compatible endpoint (`GEMMA_PROVIDER=openai-compatible`)
 

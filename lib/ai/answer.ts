@@ -161,7 +161,7 @@ export function streamGroundedAnswer(opts: AnswerOptions): Response {
         messages: prompt.messages,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
         temperature: 0.2,
-        maxRetries: 1,
+        maxRetries: model.maxRetries,
         timeout: { totalMs: 90_000, firstChunkMs: 30_000 },
         onError: ({ error }) => {
           failure = describeProviderError(error);

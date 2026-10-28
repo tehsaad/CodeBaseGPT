@@ -12,6 +12,7 @@ export type ModelHandle = {
   /** Gemma on the Gemini API rejects system instructions, so policy is sent in the first user turn. */
   supportsSystemRole: boolean;
   contextTokens: number;
+  maxRetries: number;
 };
 
 export class ProviderNotConfiguredError extends Error {
@@ -45,6 +46,7 @@ export function getGemma(): ModelHandle {
       modelId,
       supportsSystemRole: true,
       contextTokens: e.GEMMA_CONTEXT_TOKENS ?? 32_000,
+      maxRetries: 1,
     };
   }
   const google = createGoogleGenerativeAI({ apiKey: e.GEMMA_API_KEY });
@@ -52,8 +54,11 @@ export function getGemma(): ModelHandle {
     model: google(modelId),
     label: `${modelId} via Google AI Studio`,
     modelId,
-    supportsSystemRole: !/^gemma/i.test(modelId),
+    // Gemma 1–3 on the Gemini API reject system instructions; Gemma 4 accepts them (verified 2026-10-28).
+    supportsSystemRole: !/^gemma-[123](n)?-/i.test(modelId),
     contextTokens: e.GEMMA_CONTEXT_TOKENS ?? 32_000,
+    // Hosted Gemma intermittently returns 500 INTERNAL; retry before surfacing an error.
+    maxRetries: 3,
   };
 }
 
