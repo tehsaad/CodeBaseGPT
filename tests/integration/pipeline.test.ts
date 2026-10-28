@@ -179,6 +179,11 @@ describe("retrieval + cited chat", () => {
     expect(ev.map((e) => e.label)).toEqual(ev.map((_, i) => `C${i + 1}`));
   });
 
+  it("ranks the definition of a named symbol above its call sites", async () => {
+    const ev = await retrieve({ repoId, question: "How does signIn verify the password?" });
+    expect(ev[0]).toMatchObject({ path: "src/auth/session.ts", symbol: "signIn", reason: "definition" });
+  });
+
   it("streams an answer whose citations map to real file lines; invented labels are flagged", async () => {
     const model = mockGemma("Sign-in is handled by `signIn`, which verifies the password and signs a session [C1]. It also uses magic [C99].");
     const res = await call(chatRoute.POST, "", { cookie: alice, json: { message: "Where is signIn handled?" }, params: { id: repoId } });

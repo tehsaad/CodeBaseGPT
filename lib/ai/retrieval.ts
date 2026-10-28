@@ -200,7 +200,16 @@ export async function retrieve({ repoId, question, focus, limit = 10, charBudget
       .limit(12);
     await loadFiles([...calls.map((c) => c.fileId), ...targetSymbols.map((s) => s.fileId)]);
     for (const s of targetSymbols) {
-      if (candidates.some((c) => c.fileId === s.fileId && c.startLine <= s.startLine && c.endLine >= s.startLine)) continue;
+      // If a retrieved chunk already contains the definition, promote it instead of adding a duplicate.
+      const covering = candidates.filter((c) => c.fileId === s.fileId && c.startLine <= s.startLine && c.endLine >= s.startLine);
+      if (covering.length) {
+        for (const c of covering) if (c.reason !== "focus") {
+          c.score = Math.max(c.score, 50);
+          c.reason = "definition";
+          c.symbol ??= s.name;
+        }
+        continue;
+      }
       const f = fileCache.get(s.fileId)!;
       const end = Math.min(s.endLine, s.startLine + 80);
       candidates.push({ fileId: s.fileId, path: f.path, language: f.language, startLine: s.startLine, endLine: end, content: lineSlice(f.content, s.startLine, end), symbol: s.name, reason: "definition", score: 50 });

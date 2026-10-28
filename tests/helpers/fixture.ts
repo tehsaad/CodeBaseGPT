@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { zipSync, strToU8 } from "fflate";
 
-export const FIXTURE_DIR = path.join(import.meta.dirname, "..", "fixtures", "sample-repo");
+export const FIXTURE_DIR = path.join(process.cwd(), "tests", "fixtures", "sample-repo");
 
 /** Secret files are added at runtime because the repo's .gitignore (correctly) refuses to commit them. */
 export const INJECTED_SECRETS: Record<string, string> = {
