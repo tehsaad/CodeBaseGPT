@@ -35,7 +35,7 @@ async function init(): Promise<Holder> {
   const url = process.env.DATABASE_URL;
   if (url) {
     const { default: postgres } = await import("postgres");
-    const client = postgres(url, { max: 5, prepare: false, idle_timeout: 20 });
+    const client = postgres(url, { max: Number(process.env.DATABASE_POOL_MAX) || 5, prepare: false, idle_timeout: 20 });
     const db = drizzlePostgres({ client, schema });
     return { db, ready: Promise.resolve(), close: () => client.end() };
   }

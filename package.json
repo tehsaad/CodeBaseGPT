@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.mts",
+    "check": "npm run typecheck && npm run lint && npm test"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.107",
@@ -68,5 +69,10 @@
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.5"
+  },
+  "description": "Understand any codebase with an interactive Atlas, Gemma answers with file-and-line citations, and Student Stuck Mode web research.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
   }
 }
