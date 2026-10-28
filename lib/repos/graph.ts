@@ -35,6 +35,10 @@ export type Graph = {
   truncated: boolean;
   totalCandidates: number;
   languages: string[];
+  /** Every folder in the repository (not just the ones visible in this view), with file counts. */
+  folders: { path: string; files: number }[];
+  /** Why nodes are missing, if any. */
+  limitReason?: string;
 };
 
 export type GraphQuery = {
@@ -91,7 +95,7 @@ function finalize(nodes: Map<string, GraphNode>, edges: Map<string, GraphEdge>) 
  * Architecture view: folders collapse their contents until expanded. Edges between hidden files are
  * aggregated onto their nearest visible ancestors, so the overview stays small for big repositories.
  */
-async function architecture(repoId: string, q: GraphQuery): Promise<Graph> {
+async function architecture(repoId: string, q: GraphQuery): Promise<PartialGraph> {
   const files = await loadFiles(repoId, undefined, q.language);
   const expanded = new Set(q.expanded ?? []);
   expanded.add("");
@@ -159,7 +163,7 @@ async function architecture(repoId: string, q: GraphQuery): Promise<Graph> {
 }
 
 /** Flat file-to-file dependency graph, optionally scoped to a directory and language. */
-async function dependencies(repoId: string, q: GraphQuery): Promise<Graph> {
+async function dependencies(repoId: string, q: GraphQuery): Promise<PartialGraph> {
   const files = await loadFiles(repoId, q.dir, q.language);
   const byId = new Map(files.map((f) => [f.id, f]));
   const raw = (await loadEdges(repoId)).filter((e) => byId.has(e.source) && e.target && byId.has(e.target) && e.source !== e.target);
@@ -212,7 +216,7 @@ async function dependencies(repoId: string, q: GraphQuery): Promise<Graph> {
 }
 
 /** Symbols and statically resolved call edges, scoped to a file or directory. */
-async function symbols(repoId: string, q: GraphQuery): Promise<Graph> {
+async function symbols(repoId: string, q: GraphQuery): Promise<PartialGraph> {
   const db = await getDb();
   const files = q.fileId
     ? (await loadFiles(repoId)).filter((f) => f.id === q.fileId)
@@ -281,8 +285,29 @@ async function symbols(repoId: string, q: GraphQuery): Promise<Graph> {
   return { mode: "symbols", nodes: [...nodes.values()], edges: [...edges.values()], truncated: syms.length > MAX_NODES, totalCandidates: syms.length, languages: await repoLanguages(repoId) };
 }
 
-export function buildGraph(repoId: string, q: GraphQuery) {
-  if (q.mode === "dependencies") return dependencies(repoId, q);
-  if (q.mode === "symbols") return symbols(repoId, q);
-  return architecture(repoId, q);
+async function repoFolders(repoId: string) {
+  const db = await getDb();
+  const rows = await db.select({ path: repoFile.path }).from(repoFile).where(eq(repoFile.repositoryId, repoId));
+  const counts = new Map<string, number>();
+  for (const { path } of rows) {
+    const parts = path.split("/");
+    for (let i = 1; i < parts.length; i++) {
+      const dir = parts.slice(0, i).join("/");
+      counts.set(dir, (counts.get(dir) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()].map(([path, files]) => ({ path, files })).sort((a, b) => a.path.localeCompare(b.path));
+}
+
+type PartialGraph = Omit<Graph, "folders" | "limitReason">;
+
+export async function buildGraph(repoId: string, q: GraphQuery): Promise<Graph> {
+  const [g, folders] = await Promise.all([
+    (q.mode === "dependencies" ? dependencies(repoId, q) : q.mode === "symbols" ? symbols(repoId, q) : architecture(repoId, q)) as Promise<PartialGraph>,
+    repoFolders(repoId),
+  ]);
+  const limitReason = g.truncated
+    ? `Only the ${g.nodes.length} most connected of ${g.totalCandidates} ${q.mode === "symbols" ? "symbols" : "nodes"} are drawn (limit ${MAX_NODES}) so the graph stays readable. Search to jump to any file or symbol, or scope to a folder or language.`
+    : undefined;
+  return { ...g, folders, limitReason };
 }

@@ -15,6 +15,7 @@ const SAMPLE: GraphData = {
   truncated: false,
   totalCandidates: 7,
   languages: ["typescript", "javascript"],
+  folders: [],
   nodes: [
     f("src/api/login.ts", 9, 1, 0, 1),
     f("src/api/tasks.js", 17, 3, 0, 1, "javascript"),

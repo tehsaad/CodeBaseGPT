@@ -11,7 +11,7 @@ import {
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { ChevronRight, FolderTree, ListTree, Maximize2, Network, RotateCcw, Search, X } from "lucide-react";
+import { ChevronRight, Crosshair, FolderTree, ListTree, Maximize2, Network, RotateCcw, Search, Undo2, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
@@ -76,17 +76,25 @@ function AtlasInner() {
   const [filter, setFilter] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
 
-  const setParams = useCallback(
+  const [scopeDepth, setScopeDepth] = useState(0);
+  const urlWith = useCallback(
     (patch: Record<string, string | null>) => {
       const next = new URLSearchParams(params.toString());
       for (const [k, v] of Object.entries(patch)) {
         if (v === null || v === "") next.delete(k);
         else next.set(k, v);
       }
-      router.replace(`${pathname}?${next.toString()}`, { scroll: false });
+      return `${pathname}?${next.toString()}`;
     },
-    [params, pathname, router],
+    [params, pathname],
   );
+  /** Selection changes replace the URL. */
+  const setParams = useCallback((patch: Record<string, string | null>) => router.replace(urlWith(patch), { scroll: false }), [router, urlWith]);
+  /** Scope changes (mode/folder/language/expansion) push history so Back returns to the previous scope. */
+  const scope = (patch: Record<string, string | null>) => {
+    setScopeDepth((d) => d + 1);
+    router.push(urlWith(patch), { scroll: false });
+  };
 
   // Deep link from Source viewer / palette: expand the ancestors of a selected file node.
   useEffect(() => {
@@ -178,18 +186,32 @@ function AtlasInner() {
   }, [lowered, filter, repo.id]);
 
   const select = (id: string | null) => setParams({ node: id });
-  const expand = (path: string) => setParams({ expanded: [...new Set([...expanded, path])].join(","), node: null });
-  const collapseTo = (path: string | null) => setParams({ expanded: path === null ? null : expanded.filter((e) => e !== path && !e.startsWith(`${path}/`)).join(","), node: null });
-  const showSymbols = (fileId: string) => setParams({ mode: "symbols", file: fileId, dir: null, node: null });
+  const expand = (path: string) => scope({ expanded: [...new Set([...expanded, path])].join(","), node: null });
+  const collapseTo = (path: string | null) => scope({ expanded: path === null ? null : expanded.filter((e) => e !== path && !e.startsWith(`${path}/`)).join(","), node: null });
+  const showSymbols = (fileId: string) => scope({ mode: "symbols", file: fileId, dir: null, node: null });
+  /** Jumps to any search match, rescoping the graph if the match isn't currently drawn. */
   const jumpTo = (h: SearchHit) => {
     setFilter("");
     setHits([]);
-    if (h.type === "file") setParams({ mode: "architecture", node: `file:${h.path}`, expanded: [...new Set([...expanded, ...ancestors(h.path)])].join(","), lang: null });
-    else setParams({ mode: "symbols", file: h.fileId, dir: null, node: `sym:${h.id}`, lang: null });
+    if (h.type === "symbol") return scope({ mode: "symbols", file: h.fileId, dir: null, node: `sym:${h.id}`, lang: null });
+    const parent = h.path.includes("/") ? h.path.slice(0, h.path.lastIndexOf("/")) : null;
+    if (mode === "dependencies") return scope({ dir: parent, file: null, node: `file:${h.path}`, lang: null });
+    scope({ mode: "architecture", node: `file:${h.path}`, expanded: [...new Set([...expanded, ...ancestors(h.path)])].join(","), lang: null, dir: null, file: null });
   };
+  const centerSelection = () => {
+    const p = selected ? positions.get(selected.id) : null;
+    if (p) flow.setCenter(p.x + 100, p.y + 29, { zoom: Math.max(flow.getZoom(), 1), duration: 250 });
+  };
+  const activeFilters = [
+    language ? { label: `Language: ${languageLabel(language)}`, clear: () => scope({ lang: null }) } : null,
+    mode !== "architecture" && dir && !fileScope ? { label: `Folder: ${dir}/`, clear: () => scope({ dir: null }) } : null,
+    mode === "symbols" && fileScope ? { label: "Single file", clear: () => scope({ file: null }) } : null,
+    mode === "dependencies" && external ? { label: "Packages shown", clear: () => scope({ ext: null }) } : null,
+  ].filter((f): f is { label: string; clear: () => void } => Boolean(f));
+  const folderOptions = (data?.folders ?? []).filter((f) => f.path.split("/").length <= 4);
+  const suggestedScopes = (data?.folders ?? []).filter((f) => !f.path.includes("/")).sort((a, b) => b.files - a.files).slice(0, 3);
 
   const modeInfo = MODES.find((m) => m.id === mode)!;
-  const topExpanded = expanded.filter((e) => !e.includes("/")).sort();
 
   const panel = selected && data ? <DetailPanel repoId={repo.id} node={selected} graph={data} onSelect={select} onExpand={expand} onShowSymbols={showSymbols} /> : null;
 
@@ -199,7 +221,7 @@ function AtlasInner() {
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2 sm:px-4">
         <div role="radiogroup" aria-label="Atlas layout" className="flex gap-1 rounded-lg border border-border bg-surface-2 p-0.5">
           {MODES.map((m) => (
-            <button key={m.id} type="button" role="radio" aria-checked={mode === m.id} title={m.help} onClick={() => setParams({ mode: m.id, node: null, file: null })} className={cn("flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[12.5px] max-md:py-2", mode === m.id ? "bg-surface-3 text-fg" : "text-fg-muted hover:text-fg")}>
+            <button key={m.id} type="button" role="radio" aria-checked={mode === m.id} title={m.help} onClick={() => scope({ mode: m.id, node: null, file: null })} className={cn("flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[12.5px] max-md:py-2", mode === m.id ? "bg-surface-3 text-fg" : "text-fg-muted hover:text-fg")}>
               <m.icon className="size-3.5" aria-hidden />
               <span className="max-sm:sr-only">{m.label}</span>
             </button>
@@ -221,27 +243,29 @@ function AtlasInner() {
             </ul>
           ) : null}
         </div>
-        <select aria-label="Filter by language" value={language} onChange={(e) => setParams({ lang: e.target.value || null, node: null })} className="h-8 cursor-pointer rounded-md border border-border-strong bg-surface-2 px-2 text-[13px] max-md:h-11">
+        <select aria-label="Filter by language" value={language} onChange={(e) => scope({ lang: e.target.value || null, node: null })} className="h-8 cursor-pointer rounded-md border border-border-strong bg-surface-2 px-2 text-[13px] max-md:h-11">
           <option value="">All languages</option>
           {(data?.languages ?? []).map((l) => <option key={l} value={l}>{languageLabel(l)}</option>)}
         </select>
         {mode !== "architecture" ? (
-          <select aria-label="Scope to folder" value={fileScope ? "" : dir} onChange={(e) => setParams({ dir: e.target.value || null, file: null, node: null })} className="h-8 max-w-44 cursor-pointer rounded-md border border-border-strong bg-surface-2 px-2 text-[13px] max-md:h-11">
+          <select aria-label="Scope to folder" value={fileScope ? "" : dir} onChange={(e) => scope({ dir: e.target.value || null, file: null, node: null })} className="h-8 max-w-52 cursor-pointer rounded-md border border-border-strong bg-surface-2 px-2 text-[13px] max-md:h-11">
             <option value="">{fileScope ? "Single file" : "Whole repository"}</option>
-            {[...new Set(expanded.concat(topExpanded))].sort().map((d) => <option key={d} value={d}>{d}/</option>)}
+            {folderOptions.map((f) => <option key={f.path} value={f.path}>{f.path}/ ({f.files})</option>)}
           </select>
         ) : null}
         {mode === "dependencies" ? (
           <label className="flex cursor-pointer items-center gap-1.5 text-[12.5px] text-fg-muted">
-            <input type="checkbox" checked={external} onChange={(e) => setParams({ ext: e.target.checked ? "1" : null })} className="accent-[var(--primary)]" /> Packages
+            <input type="checkbox" checked={external} onChange={(e) => scope({ ext: e.target.checked ? "1" : null })} className="accent-[var(--primary)]" /> Packages
           </label>
         ) : null}
         <div className="ml-auto flex items-center gap-1">
           <Button size="sm" variant="ghost" onClick={() => setView(view === "graph" ? "outline" : "graph")} aria-pressed={view === "outline"}>
             <ListTree /> {view === "graph" ? "Outline" : "Graph"}
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => flow.fitView({ padding: 0.15, duration: 250 })} aria-label="Fit graph to screen"><Maximize2 /></Button>
-          <Button size="sm" variant="ghost" onClick={() => router.replace(pathname, { scroll: false })} aria-label="Reset Atlas"><RotateCcw /></Button>
+          <Button size="sm" variant="ghost" onClick={() => router.back()} disabled={scopeDepth === 0} aria-label="Back to previous scope" title="Back to previous scope"><Undo2 /></Button>
+          <Button size="sm" variant="ghost" onClick={centerSelection} disabled={!selected || view !== "graph"} aria-label="Center on selection" title="Center on selection"><Crosshair /></Button>
+          <Button size="sm" variant="ghost" onClick={() => flow.fitView({ padding: 0.15, duration: 250 })} aria-label="Fit graph to screen" title="Fit to screen"><Maximize2 /></Button>
+          <Button size="sm" variant="ghost" onClick={() => scope({ mode: null, expanded: null, lang: null, dir: null, file: null, ext: null, node: null })} aria-label="Reset Atlas" title="Reset"><RotateCcw /></Button>
         </div>
       </div>
 
@@ -259,11 +283,24 @@ function AtlasInner() {
       ) : null}
       {mode === "symbols" && fileScope ? (
         <div className="flex items-center gap-2 border-b border-border px-4 py-1.5 text-xs text-fg-muted">
-          <ChevronRight className="size-3" aria-hidden /> Showing symbols of one file <button type="button" className="cursor-pointer text-primary hover:underline" onClick={() => setParams({ file: null })}>show whole repository</button>
+          <ChevronRight className="size-3" aria-hidden /> Showing symbols of one file <button type="button" className="cursor-pointer text-primary hover:underline" onClick={() => scope({ file: null })}>show whole repository</button>
+        </div>
+      ) : null}
+      {data ? (
+        <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-1.5 text-xs text-fg-muted" aria-live="polite">
+          <span className="font-mono">{data.nodes.length} nodes · {data.edges.length} edges{data.truncated ? ` (of ${data.totalCandidates})` : ""}</span>
+          {activeFilters.map((f) => (
+            <button key={f.label} type="button" onClick={f.clear} className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-primary/30 bg-primary-soft px-2 py-0.5 text-fg hover:border-primary" aria-label={`Remove filter ${f.label}`}>
+              {f.label} <X className="size-3" aria-hidden />
+            </button>
+          ))}
+          {activeFilters.length ? <button type="button" onClick={() => scope({ lang: null, dir: null, file: null, ext: null, node: null })} className="cursor-pointer text-primary hover:underline">Clear all filters</button> : null}
         </div>
       ) : null}
       {data?.truncated ? (
-        <Notice tone="warning" className="mx-4 mt-2" title={`Showing the ${data.nodes.length} most connected of ${data.totalCandidates} nodes`}>Filter by language or folder to see the rest.</Notice>
+        <Notice tone="warning" className="mx-4 mt-2" title={`Partial graph: ${data.nodes.length} of ${data.totalCandidates} shown`} action={suggestedScopes.length ? <div className="flex flex-wrap gap-1.5">{suggestedScopes.map((f) => <Button key={f.path} size="sm" onClick={() => scope(mode === "architecture" ? { mode: "dependencies", dir: f.path, node: null } : { dir: f.path, file: null, node: null })}>Scope to {f.path}/ ({f.files})</Button>)}</div> : undefined}>
+          {data.limitReason}
+        </Notice>
       ) : null}
 
       <div className="relative flex min-h-[420px] flex-1">
@@ -283,6 +320,13 @@ function AtlasInner() {
               edges={edges}
               nodeTypes={nodeTypes}
               onNodeClick={(_, n) => select(n.id === selectedId ? null : n.id)}
+              onKeyDown={(e) => {
+                const id = (e.target as HTMLElement).closest(".react-flow__node")?.getAttribute("data-id");
+                if (id && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  select(id);
+                } else if (e.key === "Escape" && selectedId) select(null);
+              }}
               onNodeDoubleClick={(_, n) => {
                 const d = n.data as AtlasNodeData;
                 if (d.kind === "directory") expand(d.path);
@@ -333,7 +377,12 @@ function Legend({ mode }: { mode: AtlasMode }) {
 function Outline({ data, selectedId, onSelect, onExpand }: { data: GraphData; selectedId: string | null; onSelect: (id: string) => void; onExpand: (p: string) => void }) {
   const byId = new Map(data.nodes.map((n) => [n.id, n]));
   const sorted = [...data.nodes].sort((a, b) => (a.kind === b.kind ? (a.path || a.label).localeCompare(b.path || b.label) : a.kind === "directory" ? -1 : 1));
-  const outOf = (n: GraphNode) => data.edges.filter((e) => e.source === n.id).map((e) => byId.get(e.target)?.label).filter(Boolean);
+  const outgoing = new Map<string, string[]>();
+  for (const e of data.edges) {
+    const label = byId.get(e.target)?.label;
+    if (label) outgoing.set(e.source, [...(outgoing.get(e.source) ?? []), label]);
+  }
+  const outOf = (n: GraphNode) => outgoing.get(n.id) ?? [];
   return (
     <div className="h-full overflow-auto p-3">
       <table className="w-full text-left text-[13px]">

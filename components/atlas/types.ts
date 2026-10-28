@@ -26,6 +26,8 @@ export type GraphData = {
   truncated: boolean;
   totalCandidates: number;
   languages: string[];
+  folders: { path: string; files: number }[];
+  limitReason?: string;
 };
 
 export type AtlasMode = GraphData["mode"];
