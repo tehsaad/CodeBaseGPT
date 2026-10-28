@@ -23,7 +23,11 @@ function buildAuth() {
   return betterAuth({
     appName: "CodeBaseGPT",
     secret,
-    baseURL: e.BETTER_AUTH_URL ?? vercelOrigins[0],
+    baseURL:
+      e.BETTER_AUTH_URL ??
+      (process.env.VERCEL_ENV === "production" && process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : vercelOrigins[0]),
     trustedOrigins: vercelOrigins,
     database: drizzleAdapter(lazyDb, {
       provider: "pg",

@@ -26,7 +26,7 @@ Set these in **Vercel → Project → Settings → Environment Variables** (or w
 |---|---|---|
 | `DATABASE_URL` | **required** | Postgres connection string |
 | `BETTER_AUTH_SECRET` | **required** | 32+ random bytes (`openssl rand -base64 32`) |
-| `BETTER_AUTH_URL` | **required** | Public origin, e.g. `https://codebasegpt.vercel.app` |
+| `BETTER_AUTH_URL` | optional on Vercel | Public origin. On Vercel it defaults to the production domain (`VERCEL_PROJECT_PRODUCTION_URL`); set it when you use a custom domain |
 | `GEMMA_MODEL`, `GEMMA_API_KEY` (+ `GEMMA_PROVIDER`, `GEMMA_BASE_URL`) | for answers | See [gemma.md](gemma.md) |
 | `TAVILY_API_KEY` or `EXA_API_KEY` | for Stuck Mode web search | See [web-search.md](web-search.md) |
 | `GITHUB_CLIENT_ID/SECRET`, `GOOGLE_CLIENT_ID/SECRET` | for OAuth | See [authentication.md](authentication.md) |
