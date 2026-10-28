@@ -1,0 +1,4 @@
+{
+  // path aliases are resolved by the indexer
+  "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] }, },
+}
