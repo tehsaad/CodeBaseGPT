@@ -13,6 +13,8 @@ export type ModelHandle = {
   supportsSystemRole: boolean;
   contextTokens: number;
   maxRetries: number;
+  /** Includes hidden reasoning for thinking models (Gemma 4 spends ~700 tokens thinking before answering). */
+  maxOutputTokens: number;
 };
 
 export class ProviderNotConfiguredError extends Error {
@@ -47,6 +49,7 @@ export function getGemma(): ModelHandle {
       supportsSystemRole: true,
       contextTokens: e.GEMMA_CONTEXT_TOKENS ?? 32_000,
       maxRetries: 1,
+      maxOutputTokens: e.GEMMA_MAX_OUTPUT_TOKENS ?? 1600,
     };
   }
   const google = createGoogleGenerativeAI({ apiKey: e.GEMMA_API_KEY });
@@ -59,6 +62,8 @@ export function getGemma(): ModelHandle {
     contextTokens: e.GEMMA_CONTEXT_TOKENS ?? 32_000,
     // Hosted Gemma intermittently returns 500 INTERNAL; retry before surfacing an error.
     maxRetries: 3,
+    // Gemma 4 always reasons first and its thinking budget can't be limited, so leave room for both.
+    maxOutputTokens: e.GEMMA_MAX_OUTPUT_TOKENS ?? (/^gemma-4/i.test(modelId) ? 6144 : 1600),
   };
 }
 

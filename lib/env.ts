@@ -26,6 +26,7 @@ const schema = z.object({
   GEMMA_API_KEY: optional,
   GEMMA_BASE_URL: optional,
   GEMMA_CONTEXT_TOKENS: z.coerce.number().int().positive().optional(),
+  GEMMA_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().optional(),
 
   EMBEDDING_PROVIDER: z.enum(["google", "none"]).optional(),
   EMBEDDING_MODEL: optional,

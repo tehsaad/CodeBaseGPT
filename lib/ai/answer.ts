@@ -11,7 +11,6 @@ import type { CbgDataParts, CbgUIMessage, EvidenceItem, WebItem } from "./types"
 
 const { message, citation, conversation } = schema;
 
-export const MAX_OUTPUT_TOKENS = 1600;
 
 export function toEvidenceItems(evidence: Evidence[]): EvidenceItem[] {
   return evidence.map((e) => ({
@@ -39,8 +38,8 @@ export async function loadHistory(conversationId: string): Promise<HistoryTurn[]
 }
 
 /** Drops lowest-ranked evidence until the prompt fits the model's context window. */
-export function fitToBudget(evidence: Evidence[], web: WebEvidence[], fixedText: string, contextTokens: number) {
-  const budget = contextTokens - MAX_OUTPUT_TOKENS - 500;
+export function fitToBudget(evidence: Evidence[], web: WebEvidence[], fixedText: string, contextTokens: number, maxOutputTokens = 1600) {
+  const budget = contextTokens - maxOutputTokens - 500;
   let ev = [...evidence];
   let wb = [...web];
   const size = () => estimateTokens(fixedText + renderEvidence(ev) + renderWeb(wb));
@@ -113,7 +112,7 @@ export function streamGroundedAnswer(opts: AnswerOptions): Response {
       if (opts.web) writer.write({ type: "data-web", data: opts.web });
 
       const fitted = model
-        ? fitToBudget(opts.evidence, webEvidence, opts.policy + opts.question + (opts.extraContext ?? ""), model.contextTokens)
+        ? fitToBudget(opts.evidence, webEvidence, opts.policy + opts.question + (opts.extraContext ?? ""), model.contextTokens, model.maxOutputTokens)
         : { evidence: opts.evidence, web: webEvidence };
       writer.write({ type: "data-evidence", data: { items: toEvidenceItems(fitted.evidence) } });
 
@@ -159,7 +158,7 @@ export function streamGroundedAnswer(opts: AnswerOptions): Response {
         model: model.model,
         system: prompt.system,
         messages: prompt.messages,
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        maxOutputTokens: model.maxOutputTokens,
         temperature: 0.2,
         maxRetries: model.maxRetries,
         timeout: { totalMs: 90_000, firstChunkMs: 30_000 },
@@ -188,7 +187,7 @@ export function streamGroundedAnswer(opts: AnswerOptions): Response {
       }
       const err = failure as { code: string; message: string } | null;
       if (err || !text.trim()) {
-        const status = err ?? { code: "provider_empty", message: "The model returned an empty response." };
+        const status = err ?? { code: "provider_empty", message: "The model returned no answer text (it may have used its whole output budget on reasoning). Try again or ask a narrower question." };
         writer.write({ type: "data-status", data: { ...status, kind: "error" } });
         await persist({ conversationId: opts.conversationId, messageId, content: text || status.message, status: "error", model: model.label, evidence: fitted.evidence, web: fitted.web, used: [], meta: { code: status.code } });
         writer.write({ type: "finish" });

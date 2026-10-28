@@ -17,7 +17,7 @@ Availability depends on your key. On 2026-10-28 the project's key listed `gemma-
 curl "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMMA_API_KEY" | grep -o '"name": "models/gemma[^"]*"'
 ```
 
-Gemma 1–3 on the Gemini API reject system instructions, so for those IDs CodeBaseGPT moves its policy into the first user turn inside `<instructions>` tags (covered by a test). Gemma 4 accepts system instructions and uses them. Hosted Gemma 4 occasionally returns `500 INTERNAL`, so Google calls retry up to 3 times.
+Gemma 1–3 on the Gemini API reject system instructions, so for those IDs CodeBaseGPT moves its policy into the first user turn inside `<instructions>` tags (covered by a test). Gemma 4 accepts system instructions and uses them. Hosted Gemma 4 occasionally returns `500 INTERNAL`, so Google calls retry up to 3 times. Gemma 4 always reasons before answering (about 700 hidden tokens in our checks) and rejects `thinkingBudget`/`thinkingLevel`, so its output budget defaults to 6,144 tokens. Override it with `GEMMA_MAX_OUTPUT_TOKENS`.
 
 ## Option B: any OpenAI-compatible endpoint (`GEMMA_PROVIDER=openai-compatible`)
 
@@ -37,7 +37,7 @@ GEMMA_API_KEY=...                   # if your endpoint needs one
 - The model label (`<model> via <provider>`) is shown on every answer, so there is no silent substitution.
 - If the provider isn't configured, the response says so and lists the retrieved code locations. No answer text is generated.
 - Errors are mapped to clear messages (timeout, 429, invalid key, unknown model) and saved as failed messages. Nothing is fabricated after a failure.
-- Timeouts: 30 s to the first token and 90 s in total, with one retry and up to 1,600 output tokens.
+- Timeouts: 30 s to the first token and 90 s in total. Retries: 3 for Google, 1 otherwise. Output budget: 6,144 tokens for Gemma 4, 1,600 otherwise.
 - If no code matches the question, the model is **not called**.
 
 ## Verification status
