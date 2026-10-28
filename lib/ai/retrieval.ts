@@ -1,9 +1,8 @@
 import "server-only";
 import { and, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
 import { getDb, rowsOf, schema } from "@/lib/db";
-import { embeddingStatus } from "@/lib/env";
 import { log } from "@/lib/observability/log";
-import { embedTexts } from "./embeddings";
+import { embeddingsEnabled, embedTexts } from "./embeddings";
 
 const { codeChunk, repoFile, codeSymbol, fileImport, symbolCall } = schema;
 
@@ -143,7 +142,7 @@ export async function retrieve({ repoId, question, focus, limit = 10, charBudget
   }
 
   // 3. Semantic retrieval, when embeddings are configured and present.
-  if (embeddingStatus().configured) {
+  if (embeddingsEnabled()) {
     try {
       const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(codeChunk).where(and(eq(codeChunk.repositoryId, repoId), isNotNull(codeChunk.embedding)));
       if (n > 0) {

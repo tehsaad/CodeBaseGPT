@@ -5,9 +5,8 @@ import { detectLanguage } from "@/lib/code-intelligence/languages";
 import { extract, type ExtractedImport } from "@/lib/code-intelligence/parser";
 import { buildResolverContext, resolveImport } from "@/lib/code-intelligence/resolve";
 import { getDb, rowsOf, schema, type Db } from "@/lib/db";
-import { embeddingStatus } from "@/lib/env";
 import { log } from "@/lib/observability/log";
-import { embedTexts } from "@/lib/ai/embeddings";
+import { embeddingsEnabled, embedTexts } from "@/lib/ai/embeddings";
 import { detectManifest, type ArchiveResult } from "./archive";
 
 const { repository, indexingJob, repoFile, codeSymbol, fileImport, symbolCall, codeChunk } = schema;
@@ -287,7 +286,7 @@ export async function runJobStep(jobId: string, ownerId: string, budgetMs = 20_0
         }
       } else if (job.phase === "link") {
         await link(db, job.repositoryId);
-        const embed = embeddingStatus().configured;
+        const embed = embeddingsEnabled();
         await db
           .update(indexingJob)
           .set(embed ? { phase: "embed", processed: 0, total: 0 } : { phase: "done", status: "succeeded", finishedAt: new Date(), leaseUntil: null })

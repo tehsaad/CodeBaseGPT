@@ -95,7 +95,10 @@ See [docs/gemma.md](docs/gemma.md), [docs/web-search.md](docs/web-search.md) and
   - cross-user isolation (IDOR), rate limiting, and rejection of malformed URLs, path traversal and archive bombs
 
   Only the LLM and search provider are mocked (AI SDK `MockLanguageModelV4`).
-- **End-to-end** (`tests/e2e`): sign-up validation, sign-in, the protected-route redirect, ZIP import through the UI, Atlas selection to source at the highlighted line, citation chips, Stuck Mode, isolation between users, and mobile layout and navigation.
+- **Semantic retrieval** (`tests/integration/embeddings.test.ts`): the embed phase and pgvector search, using a deterministic test-double embedder.
+- **Auth origin** (`tests/integration/auth-origin.test.ts`): cross-site requests rejected; the configured origin and Vercel preview origins accepted.
+- **End-to-end** (`tests/e2e`, `npm run test:e2e`): sign-up validation, sign-in, the protected-route redirect, ZIP import through the UI, Atlas selection to source at the highlighted line, citation chips, Stuck Mode, isolation between users, mobile layout and navigation, and a WCAG 2.1 AA axe scan of 14 pages in both themes. Set `E2E_PROD=1` (after `npm run build`) to run against the production server; the suite also asserts zero CSP violations.
+- **Model path end-to-end** (`npm run test:e2e:provider`): runs the app against a local OpenAI-compatible **test double** (`tests/e2e/mock-openai-server.mjs`) to exercise real streaming, citation chips, invented-citation flagging, saving, reload, and the Stuck explanation, without credentials.
 
 ## Deploying to Vercel
 

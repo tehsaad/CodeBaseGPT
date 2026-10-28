@@ -48,7 +48,7 @@ const STEPS = [
 export default function Landing() {
   return (
     <div className="min-h-dvh">
-      <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-on-primary">Skip to content</a>
+      <a href="#content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-md focus:bg-primary-fill focus:px-3 focus:py-2 focus:text-on-primary">Skip to content</a>
       <header className="sticky top-0 z-30 border-b border-border bg-bg/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
           <Link href="/" aria-label="CodeBaseGPT home"><Logo /></Link>

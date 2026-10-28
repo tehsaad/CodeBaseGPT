@@ -1,7 +1,7 @@
 export function LogoMark({ className = "size-7" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill="var(--primary)" />
+      <rect width="32" height="32" rx="8" fill="var(--primary-fill)" />
       <path d="M11 9.5 6.5 16l4.5 6.5" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
       <path d="M21 9.5 25.5 16 21 22.5" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".55" />
       <circle cx="16" cy="11.5" r="2" fill="#fff" />

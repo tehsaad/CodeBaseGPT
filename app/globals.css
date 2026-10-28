@@ -14,9 +14,13 @@
   --fg: #e6eaf2;
   --fg-muted: #94a3b8;
   --fg-subtle: #7c8aa0;
-  --primary: #6366f1;
-  --primary-strong: #4f46e5;
-  --primary-soft: rgba(99, 102, 241, 0.14);
+  /* --primary is for text, borders and focus (AA on dark surfaces); --primary-fill backs white text. */
+  --primary: #8b93fb;
+  --primary-strong: #a5b4fc;
+  --primary-soft: rgba(99, 102, 241, 0.16);
+  --primary-fill: #4f46e5;
+  --primary-fill-strong: #4338ca;
+  --minimap-mask: rgba(11, 16, 32, 0.6);
   --on-primary: #ffffff;
   --accent: #8b5cf6;
   --accent-soft: rgba(139, 92, 246, 0.14);
@@ -45,6 +49,9 @@
   --primary: #4f46e5;
   --primary-strong: #4338ca;
   --primary-soft: rgba(79, 70, 229, 0.1);
+  --primary-fill: #4f46e5;
+  --primary-fill-strong: #4338ca;
+  --minimap-mask: rgba(246, 247, 251, 0.65);
   --accent: #7c3aed;
   --accent-soft: rgba(124, 58, 237, 0.1);
   --info: #0369a1;
@@ -72,6 +79,8 @@
   --color-primary: var(--primary);
   --color-primary-strong: var(--primary-strong);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-fill: var(--primary-fill);
+  --color-primary-fill-strong: var(--primary-fill-strong);
   --color-on-primary: var(--on-primary);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);

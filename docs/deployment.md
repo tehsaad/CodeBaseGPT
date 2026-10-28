@@ -43,7 +43,7 @@ All provider keys are read only on the server. None use the `NEXT_PUBLIC_` prefi
 | GitHub | `http://localhost:3000/api/auth/callback/github` | `https://<your-domain>/api/auth/callback/github` |
 | Google | `http://localhost:3000/api/auth/callback/google` | `https://<your-domain>/api/auth/callback/google` |
 
-Preview deployments get different URLs. Either use a separate OAuth app per environment, or test OAuth only on the production domain.
+Preview deployments get different URLs. Email sign-in works on previews (Vercel deployment origins are trusted automatically), but OAuth providers only redirect to registered callback URLs. Either register a separate OAuth app for previews, or test OAuth only on the production domain.
 
 ## 4. Deploy
 

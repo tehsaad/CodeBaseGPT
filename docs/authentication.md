@@ -4,7 +4,7 @@ CodeBaseGPT uses **[Better Auth](https://better-auth.com) 1.7** with the Drizzle
 
 ### Why not Auth.js?
 
-The original brief preferred Auth.js. As of this build (October 2026), Auth.js v5 is still a beta (`next-auth@5.0.0-beta.32`). Its credentials provider requires JWT sessions and has no built-in registration, password hashing, or rate limiting. Better Auth is stable and natively provides email/password sign-up, GitHub and Google OAuth, database sessions, account linking, encrypted OAuth tokens, password reset, and database-backed rate limiting. The Auth.js maintainers have also joined the Better Auth project.
+The original brief preferred Auth.js. As of this build (October 2026), Auth.js v5 is still a beta (`next-auth@5.0.0-beta.32`). Its credentials provider requires JWT sessions and has no built-in registration, password hashing, or rate limiting. Better Auth is stable and natively provides email/password sign-up, GitHub and Google OAuth, database sessions, account linking, encrypted OAuth tokens, password reset, and database-backed rate limiting.
 
 ## What is implemented
 
@@ -19,7 +19,7 @@ The original brief preferred Auth.js. As of this build (October 2026), Auth.js v
 | Token storage | OAuth access and refresh tokens are encrypted at rest (`encryptOAuthTokens`) and never sent to the browser. |
 | Password reset / email verification | Enabled only when `RESEND_API_KEY` and `EMAIL_FROM` are set. Otherwise the UI explains that it's unavailable. |
 | Route protection | `proxy.ts` redirects signed-out visitors (an optimistic cookie check). Every API route re-validates the session (`withUser`) and resource ownership (`requireOwnedRepository` / `requireOwnedConversation`). Other users' resources return **404**, not 403. |
-| CSRF | Better Auth checks `Origin` against `BETTER_AUTH_URL`. App APIs accept JSON or multipart bodies only and rely on `SameSite=Lax` cookies. |
+| CSRF | Better Auth's origin check is forced on (`disableOriginCheck: false`; the library would otherwise skip it under `NODE_ENV=test`). Trusted origins are `BETTER_AUTH_URL` plus Vercel's `VERCEL_URL`, `VERCEL_BRANCH_URL` and `VERCEL_PROJECT_PRODUCTION_URL`, so preview deployments work. App APIs accept JSON or multipart bodies only, with `SameSite=Lax` cookies. Covered by `tests/integration/auth-origin.test.ts`. |
 
 ## Setting up GitHub OAuth
 

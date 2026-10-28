@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/field";
 import { EmptyState, Notice, Skeleton } from "@/components/ui/misc";
 import { Sheet } from "@/components/ui/sheet";
 import { useRepo } from "@/components/repos/repo-context";
+import { useTheme } from "@/lib/client/last-repo";
 import { AtlasNode, kindStyle, type AtlasNodeData } from "./atlas-node";
 import { DetailPanel } from "./detail-panel";
 import { layoutGraph } from "./layout";
@@ -61,6 +62,7 @@ function AtlasInner() {
   const pathname = usePathname();
   const params = useSearchParams();
   const desktop = useIsDesktop();
+  const theme = useTheme();
   const flow = useReactFlow();
 
   const mode = (params.get("mode") as AtlasMode) || "architecture";
@@ -295,7 +297,7 @@ function AtlasInner() {
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="var(--border-strong)" />
               <Controls showInteractive={false} position="bottom-left" />
-              {desktop ? <MiniMap pannable zoomable nodeColor={(n) => ((n.data as AtlasNodeData).kind === "directory" ? "#64748b" : (n.data as AtlasNodeData).kind === "symbol" ? "#38bdf8" : "#6366f1")} maskColor="rgba(11,16,32,0.6)" /> : null}
+              {desktop ? <MiniMap pannable zoomable nodeColor={(n) => ((n.data as AtlasNodeData).kind === "directory" ? "#64748b" : (n.data as AtlasNodeData).kind === "symbol" ? "#38bdf8" : "#6366f1")} maskColor={theme === "light" ? "rgba(246,247,251,0.65)" : "rgba(11,16,32,0.6)"} /> : null}
             </ReactFlow>
           )}
           <Legend mode={mode} />
@@ -303,7 +305,7 @@ function AtlasInner() {
         {desktop && panel ? <aside className="w-[380px] shrink-0 border-l border-border bg-surface" aria-label="Selected node details">{panel}</aside> : null}
       </div>
       {!desktop ? (
-        <Sheet open={Boolean(panel)} onOpenChange={(o) => !o && select(null)} title={selected?.label ?? "Details"}>
+        <Sheet open={Boolean(panel)} onOpenChange={(o) => !o && select(null)} title={selected?.label ?? "Details"} className="md:w-[420px]">
           {panel}
         </Sheet>
       ) : null}

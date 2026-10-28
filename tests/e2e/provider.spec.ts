@@ -21,7 +21,7 @@ test("streamed Gemma answer survives the URL update, links valid citations and f
   await page.getByRole("tab", { name: "ZIP upload" }).click();
   await page.getByLabel("ZIP archive").setInputFiles({ name: "taskboard.zip", mimeType: "application/zip", buffer: Buffer.from(fixtureZip()) });
   await page.getByRole("button", { name: "Import and index" }).click();
-  await expect(page.getByText("Indexed", { exact: true })).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText("Indexed", { exact: true }).first()).toBeVisible({ timeout: 90_000 });
   const repoPath = new URL(page.url()).pathname;
 
   await page.goto(`${repoPath}/ask`);

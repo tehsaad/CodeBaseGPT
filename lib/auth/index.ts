@@ -15,10 +15,16 @@ function buildAuth() {
     (e.NODE_ENV === "production" ? undefined : "dev-only-insecure-secret-change-me-0123456789");
   if (!secret) throw new Error("BETTER_AUTH_SECRET must be set in production");
 
+  // Vercel preview/branch deployments have their own origins; trust them alongside BETTER_AUTH_URL.
+  const vercelOrigins = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL]
+    .filter((h): h is string => Boolean(h))
+    .map((h) => `https://${h}`);
+
   return betterAuth({
     appName: "CodeBaseGPT",
     secret,
-    baseURL: e.BETTER_AUTH_URL,
+    baseURL: e.BETTER_AUTH_URL ?? vercelOrigins[0],
+    trustedOrigins: vercelOrigins,
     database: drizzleAdapter(lazyDb, {
       provider: "pg",
       schema: {
@@ -92,6 +98,8 @@ function buildAuth() {
     },
     advanced: {
       ipAddress: { ipAddressHeaders: ["x-forwarded-for", "x-real-ip"] },
+      // Better Auth skips origin/CSRF checks under NODE_ENV=test by default; keep them on everywhere.
+      disableOriginCheck: false,
     },
     plugins: [nextCookies()],
   });

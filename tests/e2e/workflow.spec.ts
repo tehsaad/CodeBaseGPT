@@ -69,7 +69,7 @@ test("ZIP import indexes a repository and shows progress to completion", async (
   await page.getByRole("button", { name: "Import and index" }).click();
   await expect(page).toHaveURL(/\/repos\/[0-9a-f-]{36}$/);
   repoUrl = new URL(page.url()).pathname;
-  await expect(page.getByText("Indexed", { exact: true })).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByText("Indexed", { exact: true }).first()).toBeVisible({ timeout: 90_000 });
   await expect(page.getByText("Files indexed")).toBeVisible();
 });
 

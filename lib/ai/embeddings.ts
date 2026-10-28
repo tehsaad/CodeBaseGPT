@@ -4,8 +4,21 @@ import { embedMany } from "ai";
 import { EMBEDDING_DIMENSIONS } from "@/lib/db/schema";
 import { embeddingStatus, env } from "@/lib/env";
 
+type Embedder = (values: string[], purpose: "document" | "query") => Promise<number[][]>;
+let override: Embedder | null = null;
+
+/** Test hook: inject a deterministic embedder. */
+export function setEmbeddingOverrideForTests(fn: Embedder | null) {
+  override = fn;
+}
+
+export function embeddingsEnabled() {
+  return override !== null || embeddingStatus().configured;
+}
+
 /** Embeds text with the configured provider. Throws if embeddings aren't configured. */
 export async function embedTexts(values: string[], purpose: "document" | "query"): Promise<number[][]> {
+  if (override) return override(values, purpose);
   const status = embeddingStatus();
   if (!status.configured) throw new Error("Embeddings are not configured");
   const e = env();

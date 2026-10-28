@@ -175,7 +175,7 @@ export function InsightsView() {
           </Card>
         ) : null}
       </div>
-      <p className="text-xs text-fg-subtle">These are static measurements, not a security audit or a list of bugs. <Link href={`/repos/${repo.id}/ask`} className="text-primary hover:underline">Ask CodeBaseGPT</Link> to explain any of them.</p>
+      <p className="text-xs text-fg-subtle">These are static measurements, not a security audit or a list of bugs. <Link href={`/repos/${repo.id}/ask`} className="text-primary underline underline-offset-2">Ask CodeBaseGPT</Link> to explain any of them.</p>
     </div>
   );
 }

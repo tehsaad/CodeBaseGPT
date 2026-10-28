@@ -50,7 +50,7 @@ function CiteChips({ labels, h }: { labels: string[]; h: CiteHandlers }) {
         const web = h.web.get(label);
         if (ev) {
           return (
-            <button key={label} type="button" onClick={() => h.onOpenEvidence(ev)} title={`${ev.path}:${ev.startLine}–${ev.endLine}`} aria-label={`Open citation ${label}: ${ev.path} lines ${ev.startLine} to ${ev.endLine}`} className="inline-flex cursor-pointer items-center rounded border border-primary/40 bg-primary-soft px-1 font-mono text-[11px] font-medium leading-[18px] text-primary hover:bg-primary hover:text-on-primary">
+            <button key={label} type="button" onClick={() => h.onOpenEvidence(ev)} title={`${ev.path}:${ev.startLine}–${ev.endLine}`} aria-label={`Open citation ${label}: ${ev.path} lines ${ev.startLine} to ${ev.endLine}`} className="inline-flex cursor-pointer items-center rounded border border-primary/40 bg-primary-soft px-1 font-mono text-[11px] font-medium leading-[18px] text-primary hover:bg-primary-fill hover:text-on-primary">
               {label}
             </button>
           );
