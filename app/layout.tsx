@@ -26,7 +26,7 @@ export const viewport: Viewport = {
   themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#0b1020" }, { media: "(prefers-color-scheme: light)", color: "#f6f7fb" }],
 };
 
-const themeScript = `try{var t=localStorage.getItem('cbg-theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark'}catch(e){document.documentElement.dataset.theme='dark'}`;
+const themeScript = `document.documentElement.classList.add('js');try{var t=localStorage.getItem('cbg-theme');document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'dark'}catch(e){document.documentElement.dataset.theme='dark'}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -46,6 +46,7 @@
     "drizzle-orm": "^0.45.4",
     "fflate": "^0.8.3",
     "lucide-react": "^1.63.0",
+    "motion": "^14.7.1",
     "next": "16.4.3",
     "postgres": "^3.4.9",
     "react": "19.3.0",
