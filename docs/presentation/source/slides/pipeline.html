@@ -1,0 +1,49 @@
+<section id="pipeline" data-transition="push" style="background:#0c0c0c;color:#f2f2ee;font-family:'IBM Plex Sans', Arial, sans-serif;display:flex;flex-direction:column;padding:128px 128px 160px">
+<div style="position:absolute;left:0;top:0;width:1920px;height:1080px;background:repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 96px)"></div>
+<p style="position:absolute;left:128px;top:128px;width:900px;font-family:'Geist Mono', 'Courier New', monospace;font-size:24px;letter-spacing:5px;text-transform:uppercase;color:#c8f135">How it works</p>
+<h2 style="position:absolute;left:128px;top:172px;width:1400px;font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-2px;color:#f2f2ee">From repository to map</h2>
+<x-embed style="position:absolute;left:128px;top:318px;width:1664px;height:220px"><!doctype html><html><head><style>
+html,body{margin:0;background:transparent;overflow:hidden}
+.base{stroke:#2a2a27;stroke-width:4}
+.flow{stroke:#c8f135;stroke-width:4;stroke-dasharray:10 14;animation:m 1s linear infinite;opacity:.55}
+.ring{fill:#121212;stroke:#3a3a36;stroke-width:3}
+.lit{fill:none;stroke:#c8f135;stroke-width:4;opacity:0;animation:lit 6s ease-in-out infinite}
+.num{font:600 32px ui-monospace,Menlo,Consolas,monospace;fill:#f2f2ee;text-anchor:middle;dominant-baseline:central}
+.halo{fill:#c8f135;opacity:0;animation:halo 6s ease-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes m{to{stroke-dashoffset:-24}}
+@keyframes lit{0%,4%{opacity:0}10%,30%{opacity:1}42%,100%{opacity:.25}}
+@keyframes halo{0%,4%{opacity:0;transform:scale(.6)}10%{opacity:.35;transform:scale(1)}30%{opacity:0;transform:scale(1.6)}100%{opacity:0}}
+</style></head><body>
+<svg viewBox="0 0 1664 220" width="1664" height="220" xmlns="http://www.w3.org/2000/svg">
+<line class="base" x1="192" y1="110" x2="1472" y2="110"/>
+<path id="l1" class="flow" d="M262 110 H562"/>
+<path id="l2" class="flow" d="M678 110 H978"/>
+<path id="l3" class="flow" d="M1094 110 H1394"/>
+<g><circle class="halo" cx="192" cy="110" r="70"/><circle class="ring" cx="192" cy="110" r="58"/><circle class="lit" cx="192" cy="110" r="58" style="animation-delay:0s"/><text class="num" x="192" y="110">01</text></g>
+<g><circle class="halo" cx="624" cy="110" r="70" style="animation-delay:1.5s"/><circle class="ring" cx="624" cy="110" r="58"/><circle class="lit" cx="624" cy="110" r="58" style="animation-delay:1.5s"/><text class="num" x="624" y="110">02</text></g>
+<g><circle class="halo" cx="1040" cy="110" r="70" style="animation-delay:3s"/><circle class="ring" cx="1040" cy="110" r="58"/><circle class="lit" cx="1040" cy="110" r="58" style="animation-delay:3s"/><text class="num" x="1040" y="110">03</text></g>
+<g><circle class="halo" cx="1456" cy="110" r="70" style="animation-delay:4.5s"/><circle class="ring" cx="1456" cy="110" r="58"/><circle class="lit" cx="1456" cy="110" r="58" style="animation-delay:4.5s"/><text class="num" x="1456" y="110">04</text></g>
+<rect width="22" height="22" rx="4" fill="#c8f135" x="-11" y="-11"><animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.08;0.25;1" calcMode="linear"><mpath href="#l1"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;0.08;0.25;0.27;1"/></rect>
+<rect width="22" height="22" rx="4" fill="#c8f135" x="-11" y="-11"><animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.33;0.5;1" calcMode="linear"><mpath href="#l2"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.32;0.33;0.5;0.52;1"/></rect>
+<rect width="22" height="22" rx="4" fill="#c8f135" x="-11" y="-11"><animateMotion dur="6s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.58;0.75;1" calcMode="linear"><mpath href="#l3"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" values="0;0;1;1;0;0" keyTimes="0;0.57;0.58;0.75;0.77;1"/></rect>
+</svg></body></html></x-embed>
+<div data-build-in="rise order 1" style="position:absolute;left:128px;top:580px;width:384px;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-family:'Archivo', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.1;color:#f2f2ee">Import</h3>
+<p style="font-size:28px;line-height:1.4;color:#a3a39c">A GitHub URL or a ZIP upload. Secrets, binaries and build output are filtered out.</p>
+</div>
+<div data-build-in="rise order 2" style="position:absolute;left:544px;top:580px;width:384px;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-family:'Archivo', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.1;color:#f2f2ee">Parse</h3>
+<p style="font-size:28px;line-height:1.4;color:#a3a39c">Tree-sitter reads TypeScript, JavaScript, Python, Java, C and C++.</p>
+</div>
+<div data-build-in="rise order 3" style="position:absolute;left:960px;top:580px;width:384px;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-family:'Archivo', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.1;color:#f2f2ee">Index</h3>
+<p style="font-size:28px;line-height:1.4;color:#a3a39c">Files, symbols, imports and calls stored in Postgres with full-text search.</p>
+</div>
+<div data-build-in="rise order 4" style="position:absolute;left:1376px;top:580px;width:384px;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-family:'Archivo', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.1;color:#c8f135">Explore</h3>
+<p style="font-size:28px;line-height:1.4;color:#a3a39c">An Atlas graph, change impact, a cited guide and a learning path.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:900px;font-family:'Geist Mono', 'Courier New', monospace;font-size:24px;color:#85857f">codebasegpt.vercel.app</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-family:'Geist Mono', 'Courier New', monospace;font-size:24px;color:#85857f">02 / 04</p>
+<aside>Four steps. Import from GitHub or a ZIP, with secrets and binaries filtered out. Tree-sitter parses six languages. Everything is indexed in Postgres with full-text search. Then you explore: the Atlas graph, the change-impact view, a cited codebase guide and a learning path built from the repository’s real structure.</aside>
+</section>

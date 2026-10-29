@@ -1,0 +1,58 @@
+<section id="evidence" data-transition="fade" style="background:#050505;color:#f2f2ee;font-family:'IBM Plex Sans', Arial, sans-serif;display:flex;flex-direction:column;padding:128px 128px 160px">
+<p style="position:absolute;left:128px;top:128px;width:900px;font-family:'Geist Mono', 'Courier New', monospace;font-size:24px;letter-spacing:5px;text-transform:uppercase;color:#c8f135">Ask · Code Tutor</p>
+<h2 style="position:absolute;left:128px;top:172px;width:1500px;font-family:'Archivo', Arial, sans-serif;font-size:72px;font-weight:700;line-height:1.1;letter-spacing:-2px;color:#f2f2ee">Answers that show their sources</h2>
+<x-embed style="position:absolute;left:128px;top:300px;width:800px;height:520px"><!doctype html><html><head><style>
+html,body{margin:0;background:transparent;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#f2f2ee}
+.card{box-sizing:border-box;width:800px;height:520px;border:1px solid #2a2a27;border-radius:24px;background:#0c0c0c;padding:28px;display:flex;flex-direction:column;gap:18px}
+.q{align-self:flex-end;background:#1a1a1a;border-radius:18px 18px 4px 18px;padding:12px 20px;font-size:24px;opacity:0;animation:in 9s infinite}
+.a{font-size:26px;line-height:1.5;color:#e4e4de}
+.w{opacity:0;animation:in 9s infinite}
+.c{display:inline-block;font:600 22px ui-monospace,Menlo,Consolas,monospace;padding:0 8px;border-radius:6px;border:1px solid #c8f135;color:#c8f135;background:rgba(200,241,53,.12);line-height:30px;vertical-align:2px}
+.x{border-color:#f87171;color:#f87171;background:rgba(248,113,113,.12);text-decoration:line-through}
+.note{font:500 22px ui-monospace,Menlo,Consolas,monospace;color:#f87171}
+.ev{display:flex;flex-direction:column;gap:10px;opacity:0;animation:in 9s infinite}
+.row{display:flex;gap:14px;align-items:center;border-left:3px solid #c8f135;background:#121212;border-radius:8px;padding:10px 14px;font:500 24px ui-monospace,Menlo,Consolas,monospace;color:#d6d6cf}
+.hl{animation:glow 9s infinite}
+@keyframes in{0%{opacity:0;transform:translateY(8px)}6%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes glow{0%,62%{box-shadow:none}68%{box-shadow:0 0 0 2px #c8f135}80%,100%{box-shadow:none}}
+</style></head><body><div class="card">
+<div class="q" style="animation-delay:0s">How does signIn verify the password?</div>
+<div class="a"><span class="w" style="animation-delay:.9s">It looks the user up,</span> <span class="w" style="animation-delay:1.3s">checks the password with verifyPassword</span> <span class="w c" style="animation-delay:1.7s">C2</span><span class="w" style="animation-delay:2.1s">, then signs a session token</span> <span class="w c" style="animation-delay:2.5s">C1</span><span class="w" style="animation-delay:2.9s">.</span><br><span class="w" style="animation-delay:3.4s">It also mentions</span> <span class="w c x" style="animation-delay:3.8s">C99</span> <span class="w note" style="animation-delay:4.3s">not in evidence · not linked</span></div>
+<div class="ev" style="animation-delay:4.9s">
+<div class="row hl"><span style="color:#c8f135">C1</span>src/auth/session.ts:25–29</div>
+<div class="row"><span style="color:#c8f135">C2</span>src/auth/password.ts</div>
+</div>
+</div></body></html></x-embed>
+<x-embed style="position:absolute;left:992px;top:300px;width:800px;height:520px"><!doctype html><html><head><style>
+html,body{margin:0;background:transparent;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.card{box-sizing:border-box;width:800px;height:520px;border:1px solid #2a2a27;border-radius:24px;background:#0c0c0c;position:relative}
+svg{position:absolute;left:0;top:0}
+.st{font:600 26px system-ui,Arial,sans-serif;fill:#85857f;text-anchor:middle}
+.on{animation:on 8s infinite}
+.sweep{transform-origin:400px 260px;animation:spin 8s steps(1) infinite}
+.term{position:absolute;left:250px;top:200px;width:300px;height:120px;border-radius:14px;background:#090909;border:1px solid #2a2a27;font:500 24px ui-monospace,Menlo,Consolas,monospace;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px}
+.err,.ok{position:absolute;opacity:0}
+.err{color:#f87171;animation:err 8s infinite}
+.ok{color:#c8f135;animation:ok 8s infinite}
+@keyframes spin{0%{transform:rotate(0)}25%{transform:rotate(90deg)}50%{transform:rotate(180deg)}75%{transform:rotate(270deg)}}
+@keyframes on{0%,23%{fill:#f2f2ee}25%,100%{fill:#85857f}}
+@keyframes err{0%,4%{opacity:0}8%,70%{opacity:1}74%,100%{opacity:0}}
+@keyframes ok{0%,76%{opacity:0}80%,96%{opacity:1}100%{opacity:0}}
+</style></head><body><div class="card">
+<svg viewBox="0 0 800 520" width="800" height="520" xmlns="http://www.w3.org/2000/svg">
+<circle cx="400" cy="260" r="190" fill="none" stroke="#2a2a27" stroke-width="4"/>
+<g class="sweep"><path d="M400 70 A190 190 0 0 1 590 260" fill="none" stroke="#c8f135" stroke-width="8" stroke-linecap="round"/></g>
+<circle cx="400" cy="70" r="12" fill="#c8f135"/><circle cx="590" cy="260" r="12" fill="#c8f135"/><circle cx="400" cy="450" r="12" fill="#c8f135"/><circle cx="210" cy="260" r="12" fill="#c8f135"/>
+<text class="st on" x="400" y="44" style="animation-delay:0s">Run</text>
+<text class="st on" x="676" y="268" style="animation-delay:2s">Explain</text>
+<text class="st on" x="400" y="498" style="animation-delay:4s">Fix (diff)</text>
+<text class="st on" x="118" y="268" style="animation-delay:6s">Verify</text>
+</svg>
+<div class="term"><span class="err">IndexError</span><span class="ok">Average: 85.0</span></div>
+</div></body></html></x-embed>
+<p data-build-in="fade order 1" style="position:absolute;left:128px;top:844px;width:800px;font-size:24px;line-height:1.4;color:#a3a39c"><b style="color:#f2f2ee">Ask.</b> Gemma 4 answers from retrieved code; citation labels missing from the evidence are flagged and never linked.</p>
+<p data-build-in="fade order 2" style="position:absolute;left:992px;top:844px;width:800px;font-size:24px;line-height:1.4;color:#a3a39c"><b style="color:#f2f2ee">Code Tutor.</b> Runs code in an isolated Vercel Sandbox, explains the real output, proposes a diff, then re-runs to verify.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:900px;font-family:'Geist Mono', 'Courier New', monospace;font-size:24px;color:#85857f">codebasegpt.vercel.app</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-family:'Geist Mono', 'Courier New', monospace;font-size:24px;color:#85857f">03 / 04</p>
+<aside>Left: an answer streams in with citation chips. C1 and C2 point at exact files and lines; C99 was not in the evidence the model saw, so it is struck through and never linked. Right: the Code Tutor loop. The default Python example crashes with an IndexError; the tutor explains it, proposes a fix as a diff, and after applying it the re-run prints Average: 85.0.</aside>
+</section>
